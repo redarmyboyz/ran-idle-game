@@ -141,6 +141,18 @@
   @keyframes slideIn { 0% { opacity:0; transform:translateX(50px); } 10% { opacity:1; transform:translateX(0); } 90% { opacity:1; transform:translateX(0); } 100% { opacity:0; transform:translateX(50px); } }
 
   .rarity-common { color: var(--text); } .rarity-uncommon { color: var(--green); } .rarity-rare { color: #70b0f0; } .rarity-epic { color: #c080f0; }
+
+  /* ── รัศมีออร่าตามสไตล์ Ran Online (แสงตามระดับบวก) ── */
+  .equip-slot-val.enchant-low { color: #88ff88; text-shadow: 0 0 5px rgba(136,255,136,0.5); } /* +4 ถึง +6 */
+  .equip-slot-val.enchant-mid { color: #4be8d8; text-shadow: 0 0 8px rgba(75,232,216,0.8); font-weight: bold; } /* +7 ถึง +9 */
+  .equip-slot-val.enchant-high { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,1); font-weight: bold; } /* +10 ถึง +14 */
+  .equip-slot-val.enchant-max { color: #9b59e8; text-shadow: 0 0 12px #9b59e8, 0 0 5px #e8b84b; font-weight: bold; animation: pulseGlow 1s infinite alternate; } /* +15 */
+  
+  @keyframes pulseGlow { from { text-shadow: 0 0 8px #9b59e8; } to { text-shadow: 0 0 15px #e8b84b; } }
+
+  /* ── ระบบเลือกขาย ── */
+  .bulk-sell-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg2); border-bottom: 1px solid var(--border); font-size: 11px; margin-bottom: 8px; }
+  .item-check { accent-color: var(--red); width: 14px; height: 14px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -208,6 +220,8 @@
           <div class="stat-item"><div class="stat-item-label">VIT</div><div class="stat-item-val"><span id="s-vit">0</span><span id="t-vit" class="temp-stat"></span></div></div>
           <div class="stat-item"><div class="stat-item-label">ATK โจมตี</div><div class="stat-item-val" id="s-atk">0</div></div>
           <div class="stat-item"><div class="stat-item-label">DEF ป้องกัน</div><div class="stat-item-val" id="s-def">0</div></div>
+          <div class="stat-item"><div class="stat-item-label">CRI คริติคอล</div><div class="stat-item-val"><span id="s-crit">0</span>%</div></div>
+          <div class="stat-item"><div class="stat-item-label">FLEE หลบหลีก</div><div class="stat-item-val"><span id="s-dodge">0</span>%</div></div>
         </div>
 
         <div id="stat-points-area" class="stat-alloc-box" style="display:none;">
@@ -282,6 +296,10 @@
       
       <div id="inv-items" class="panel-body">
         <div style="margin-bottom:8px; font-size:14px; color:var(--gold); font-family:monospace;">💰 <span id="gold-display">0</span></div>
+        <div class="bulk-sell-bar">
+          <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="check-all" onchange="toggleAllCheckboxes(this)"> เลือกทั้งหมด</label>
+          <button class="btn-sm" style="background:var(--red2); color:white; border:none; padding:4px 10px;" onclick="sellSelectedItems()">💰 ขายที่เลือก</button>
+        </div>
         <div id="inventory-list"></div>
       </div>
 
@@ -400,20 +418,31 @@ function startGame(cls) {
 
 function calcDerivedStats() {
   let bAtk = 0, bDef = 0, bStr = 0, bInt = 0, bDex = 0, bVit = 0, bHp = 0;
+  let bCrit = 0, bDodge = 0; // เพิ่มค่าคริ/หลบ
   
   EQUIP_SLOTS.forEach(slot => {
     const itemName = G.equipment[slot];
     if (itemName && ITEMS[itemName]) {
       const it = ITEMS[itemName];
       const elv = G.enchants[slot] || 0;
-      const multi = 1 + (elv * 0.15); // +15% stats per enchant level
-      bAtk += Math.floor((it.atk||0) * multi);
-      bDef += Math.floor((it.def||0) * multi);
+      
+      // การตีบวกแบบ Ran Online: ตัวคูณ + ค่า Fix Stat มหาศาลเมื่อบวกสูง
+      const multi = 1 + (elv * 0.20); 
+      const flatAtk = elv > 0 ? (elv * elv * 2) : 0; // ทวีคูณความแรงเมื่อบวกสูง (15x15x2 = 450)
+      const flatDef = elv > 0 ? (elv * elv * 1.5) : 0;
+      const flatHp  = elv > 0 ? (elv * 50) : 0;
+
+      bAtk += Math.floor((it.atk||0) * multi) + flatAtk;
+      bDef += Math.floor((it.def||0) * multi) + Math.floor(flatDef);
       bStr += Math.floor((it.str||0) * multi);
       bInt += Math.floor((it.int||0) * multi);
       bDex += Math.floor((it.dex||0) * multi);
       bVit += Math.floor((it.vit||0) * multi);
-      bHp  += Math.floor((it.hp||0) * multi);
+      bHp  += Math.floor((it.hp||0) * multi) + flatHp;
+
+      // เอฟเฟกต์แฝงของการตีบวก: อาวุธบวกสูงได้คริติคอล / ชุดรองเท้าได้หลบหลีก
+      if (slot === 'weapon') bCrit += elv * 1; 
+      if (slot === 'shoes' || slot === 'pants') bDodge += elv * 1.5;
     }
   });
 
@@ -430,6 +459,10 @@ function calcDerivedStats() {
   else                         G.atk = Math.floor(eInt * 2.2 + bAtk + G.level * 2);
 
   G.def  = Math.floor((eVit * 0.8) + bDef + G.level * 1.5);
+
+  // คำนวณ Critical และ Dodge Rate (Max 80%)
+  G.crit = Math.min(80, Math.floor((eDex * 0.2) + bCrit)); 
+  G.dodge = Math.min(80, Math.floor((eDex * 0.3) + bDodge));
 }
 
 // ══════════════════════════════════════════════
@@ -530,10 +563,18 @@ function toggleBattle() {
 function doBattle() {
   if (!currentMon || G.hp <= 0) return;
   
-  // โจมตีมอนสเตอร์
+  // ── ผู้เล่นโจมตีมอนสเตอร์ (คำนวณคริติคอล) ──
+  const isCrit = Math.random() * 100 <= (G.crit || 0);
   let dmg = Math.max(1, G.atk - currentMon.def + Math.floor(Math.random() * (G.atk * 0.2)));
+  
+  if (isCrit) {
+    dmg = Math.floor(dmg * 1.5); // แรงขึ้น 1.5 เท่า
+    log(`<span class="log-dmg" style="color:#ffdd00; font-weight:bold; font-size:12px;">⚡ คริติคอล! -${dmg.toLocaleString()}</span>`);
+  } else {
+    log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`);
+  }
+  
   monHp = Math.max(0, monHp - dmg);
-  log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`);
 
   if (monHp <= 0) {
     const expGain = currentMon.exp;
@@ -566,24 +607,29 @@ function doBattle() {
     spawnMonster(); renderAll(); saveLocal(); return;
   }
 
-  // มอนสเตอร์สวนกลับ
-  const monDmg = Math.max(1, currentMon.atk - G.def + Math.floor(Math.random() * 5));
-  G.hp = Math.max(0, G.hp - monDmg);
-  
-  if (G.hp <= 0) {
-    let expLoss = Math.floor(G.expNext * 0.05); // หัก 5% ของหลอดต่อไป
-    G.exp = Math.max(0, G.exp - expLoss);
-    
-    log(`<span style="color:var(--red)">💀 คุณเสียชีวิต! สูญเสีย EXP -${expLoss}</span>`);
-    showNotif('💀 คุณเสียชีวิต!', 'notif-die');
-    if (battleRunning) toggleBattle();
-    G.hp = 0;
+  // ── มอนสเตอร์สวนกลับ (คำนวณหลบหลีก) ──
+  const isDodge = Math.random() * 100 <= (G.dodge || 0);
+  if (isDodge) {
+    log(`<span style="color:var(--cyan);">💨 หลบหลีกสำเร็จ! (Miss)</span>`);
   } else {
-    // Auto Potion Logic (ถ้ายังมีชีวิต)
-    if (document.getElementById('auto-pot-check').checked) {
-      const pct = parseInt(document.getElementById('auto-pot-pct').value) || 30;
-      if ((G.hp / G.maxHp * 100) <= pct) {
-        usePotion(true); // ใช้งานแบบออโต้
+    const monDmg = Math.max(1, currentMon.atk - G.def + Math.floor(Math.random() * 5));
+    G.hp = Math.max(0, G.hp - monDmg);
+    
+    if (G.hp <= 0) {
+      let expLoss = Math.floor(G.expNext * 0.05); // หัก 5% ของหลอดต่อไป
+      G.exp = Math.max(0, G.exp - expLoss);
+      
+      log(`<span style="color:var(--red)">💀 คุณเสียชีวิต! สูญเสีย EXP -${expLoss}</span>`);
+      showNotif('💀 คุณเสียชีวิต!', 'notif-die');
+      if (battleRunning) toggleBattle();
+      G.hp = 0;
+    } else {
+      // Auto Potion Logic
+      if (document.getElementById('auto-pot-check').checked) {
+        const pct = parseInt(document.getElementById('auto-pot-pct').value) || 30;
+        if ((G.hp / G.maxHp * 100) <= pct) {
+          usePotion(true); 
+        }
       }
     }
   }
@@ -736,7 +782,12 @@ function renderStats() {
     document.getElementById('s-'+s).textContent = G[s];
     document.getElementById('t-'+s).textContent = tempStats[s] > 0 ? `(+${tempStats[s]})` : '';
   });
-  document.getElementById('s-atk').textContent = G.atk; document.getElementById('s-def').textContent = G.def;
+  document.getElementById('s-atk').textContent = G.atk; 
+  document.getElementById('s-def').textContent = G.def;
+  
+  // อัปเดตคริและหลบหลีก
+  if(document.getElementById('s-crit')) document.getElementById('s-crit').textContent = G.crit;
+  if(document.getElementById('s-dodge')) document.getElementById('s-dodge').textContent = G.dodge;
   
   const remainPts = G.statPts - tempStats.pts;
   if (G.statPts > 0 && G.hp > 0) {
@@ -752,9 +803,16 @@ function renderEquip() {
     const el = document.getElementById('eq-'+slot);
     if (G.equipment[slot]) {
       const itName = G.equipment[slot];
-      const elv = G.enchants[slot] ? `<span class="enchant-lvl"> +${G.enchants[slot]}</span>` : '';
-      el.innerHTML = `${ITEMS[itName].icon} ${itName}${elv}`;
-      el.className = 'equip-slot-val equipped';
+      const elv = G.enchants[slot] || 0;
+      let auraClass = '';
+      if (elv >= 4 && elv <= 6) auraClass = 'enchant-low';
+      else if (elv >= 7 && elv <= 9) auraClass = 'enchant-mid';
+      else if (elv >= 10 && elv <= 14) auraClass = 'enchant-high';
+      else if (elv >= 15) auraClass = 'enchant-max';
+
+      const elvText = elv > 0 ? `<span class="enchant-lvl"> +${elv}</span>` : '';
+      el.innerHTML = `${ITEMS[itName].icon} ${itName}${elvText}`;
+      el.className = `equip-slot-val equipped ${auraClass}`;
     } else {
       el.textContent = '-'; el.className = 'equip-slot-val';
     }
@@ -774,6 +832,7 @@ function renderInventory() {
     if (it.reqClass) reqText += `[${CLASS_DATA[it.reqClass].name}]`;
     
     return `<div class="item-row">
+      <input type="checkbox" class="item-check sell-checkbox" value="${name}">
       <div class="item-icon">${it.icon}</div>
       <div class="item-info">
         <div class="item-name rarity-${it.rarity}">${name}</div>
@@ -789,6 +848,41 @@ function renderInventory() {
     </div>`;
   }).join('');
   document.getElementById('gold-display').textContent = G.gold.toLocaleString();
+  if(document.getElementById('check-all')) document.getElementById('check-all').checked = false;
+}
+
+// ฟังก์ชันใหม่สำหรับการขายไอเทมที่เลือก (Bulk Sell)
+function toggleAllCheckboxes(source) {
+  const checkboxes = document.querySelectorAll('.sell-checkbox');
+  checkboxes.forEach(cb => cb.checked = source.checked);
+}
+
+function sellSelectedItems() {
+  const checkboxes = document.querySelectorAll('.sell-checkbox:checked');
+  if (checkboxes.length === 0) return showNotif('ไม่ได้เลือกไอเทมที่จะขาย', 'notif-die');
+  
+  let totalGold = 0;
+  let soldItems = [];
+
+  checkboxes.forEach(cb => {
+    const name = cb.value;
+    const qty = G.inventory[name];
+    const it = ITEMS[name];
+    if (qty > 0 && it) {
+      const earn = it.sell * qty;
+      totalGold += earn;
+      soldItems.push(`${name} x${qty}`);
+      delete G.inventory[name]; // ขายทิ้งทั้งหมดของประเภทนั้น
+    }
+  });
+
+  if (totalGold > 0) {
+    G.gold += totalGold;
+    log(`<span style="color:var(--gold)">💰 ขยะถูกเคลียร์! ได้รับ +${totalGold.toLocaleString()} G</span>`);
+    showNotif(`ขายได้ ${totalGold.toLocaleString()} G`, 'notif-lvlup');
+    renderAll();
+    saveLocal();
+  }
 }
 
 function renderEnchant() {
