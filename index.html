@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAN Idle RPG - Expanded</title>
+<title>RAN Idle RPG - SG Campus</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
@@ -21,12 +21,17 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg0); color: var(--text); font-family: 'Noto Sans Thai', sans-serif; font-size: 12px; min-height: 100vh; overflow-x: hidden; }
 
-  /* ── Login & Title Screens ── */
-  #login-screen, #title-screen {
+  /* ── Screens ── */
+  #loading-screen, #login-screen, #title-screen {
     position: fixed; inset: 0; background: var(--bg0);
     display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999;
   }
-  #title-screen { display: none; background: radial-gradient(ellipse at 50% 30%, #1a0a2e 0%, #0a0c14 70%); }
+  #login-screen, #title-screen { display: none; }
+  #title-screen { background: radial-gradient(ellipse at 50% 30%, #1a0a2e 0%, #0a0c14 70%); }
+  
+  .loading-text { font-family: 'Share Tech Mono', monospace; font-size: 24px; color: var(--cyan); animation: blink 1.5s infinite; }
+  @keyframes blink { 50% { opacity: 0.5; } }
+
   .login-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 24px; width: 300px; text-align: center; }
   .login-input { width: 100%; padding: 8px; margin-bottom: 12px; background: var(--bg1); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; outline: none; }
   .login-input:focus { border-color: var(--gold); }
@@ -50,15 +55,14 @@
   
   .quest-bar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 4px 16px; font-size: 10px; color: var(--cyan); text-align: center; letter-spacing: 1px; }
 
-  /* ปรับขนาดซ้ายให้กะทัดรัดขึ้น */
-  .main-layout { display: grid; grid-template-columns: 210px 1fr 280px; flex: 1; overflow: hidden; }
+  .main-layout { display: grid; grid-template-columns: 210px 1fr 300px; flex: 1; overflow: hidden; }
   .panel { background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
   .panel:last-child { border-right: none; border-left: 1px solid var(--border); }
   .panel-header { padding: 6px 10px; border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 700; color: var(--text2); background: var(--bg2); }
   .panel-body { padding: 10px; overflow-y: auto; flex: 1; }
   .panel-body::-webkit-scrollbar { width: 4px; } .panel-body::-webkit-scrollbar-thumb { background: var(--border2); }
 
-  /* ── Left Panel (Character) ── */
+  /* ── Left Panel ── */
   .char-portrait { width: 40px; height: 40px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 6px; }
   .char-name { text-align: center; font-size: 13px; font-weight: 700; color: var(--white); }
   .char-class { text-align: center; font-size: 10px; color: var(--text2); margin-bottom: 8px; }
@@ -81,13 +85,13 @@
   .btn-sm:hover { background: var(--border2); color: var(--white); }
   
   .equip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .equip-slot { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 9px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .equip-slot-label { color: var(--text3); margin-bottom: 1px; }
-  .equip-slot-val { color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .equip-slot { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 9px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.2s; }
+  .equip-slot-label { color: var(--text3); margin-bottom: 1px; pointer-events: none; }
+  .equip-slot-val { color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; pointer-events: none; }
   .equip-slot-val.equipped { color: var(--gold); }
   .enchant-lvl { color: var(--cyan); font-weight: bold; }
 
-  /* ── Middle Panel (Battle & Chat) ── */
+  /* ── Middle Panel ── */
   .zone-tabs { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; background: var(--bg1); }
   .zone-tabs::-webkit-scrollbar { display: none; }
   .zone-tab { padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg2); font-size: 10px; cursor: pointer; white-space: nowrap; }
@@ -96,86 +100,88 @@
   
   .battle-arena { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px; }
   .monster-box { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-  .monster-icon { font-size: 36px; margin-bottom: 6px; }
+  .monster-icon { font-size: 36px; margin-bottom: 6px; display:flex; justify-content:center; align-items:center; }
   .monster-name { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
   .monster-name.boss { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,0.5); font-size: 16px; }
   .monster-hp-track { height: 10px; width: 80%; background: var(--bg3); border-radius: 5px; overflow: hidden; }
   .monster-hp-fill { height: 100%; background: linear-gradient(90deg, #a83030, #e84b4b); transition: width .1s; }
   
-  .battle-controls { display: flex; gap: 6px; justify-content: center; align-items: center; }
+  .battle-controls { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .btn-row { display: flex; gap: 6px; justify-content: center; }
   .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid; font-size: 11px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 500; }
   .btn-primary { background: rgba(232,184,75,0.15); border-color: var(--gold2); color: var(--gold); }
   .btn-danger { background: rgba(232,75,75,0.1); border-color: var(--red2); color: var(--red); }
   .btn-success { background: rgba(75,232,120,0.15); border-color: var(--green2); color: var(--green); }
+  .btn-blue { background: rgba(75,140,232,0.15); border-color: var(--blue2); color: var(--blue); }
   
-  .auto-pot-box { font-size: 10px; color: var(--text2); display: flex; align-items: center; gap: 4px; background: var(--bg2); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); }
-  
-  /* ช่องจำลองแชท (Battle Log) */
-  .chat-container { display: flex; flex-direction: column; flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .auto-pot-box { font-size: 10px; color: var(--text2); display: flex; align-items: center; gap: 8px; background: var(--bg2); padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border); width: 100%; justify-content: center; }
+  .auto-pot-item { display: flex; align-items: center; gap: 4px; }
+  .auto-pot-input { width: 30px; background: var(--bg1); border: 1px solid var(--border); color: var(--text); text-align: center; border-radius: 2px; }
+
+  .chat-container { display: flex; flex-direction: column; height: 140px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .battle-log { flex: 1; overflow-y: auto; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 11px; line-height: 1.5; }
   .battle-log::-webkit-scrollbar { width: 4px; } .battle-log::-webkit-scrollbar-thumb { background: var(--border2); }
-  .chat-input-area { display: flex; background: var(--bg1); border-top: 1px solid var(--border); }
-  .chat-input { flex: 1; background: transparent; border: none; padding: 8px 10px; color: var(--text); font-size: 11px; font-family: 'Noto Sans Thai', sans-serif; outline: none; }
-  .chat-btn { background: var(--border2); color: var(--text2); border: none; padding: 0 12px; font-size: 11px; cursor: not-allowed; font-family: 'Noto Sans Thai', sans-serif; }
+  
+  .log-dmg { color: #f07070; } .log-skill { color: #4be8d8; font-weight: bold; text-shadow: 0 0 5px rgba(75,232,216,0.5); } .log-kill { color: var(--gold); } .log-drop { color: #c080f0; } .log-lvlup { color: var(--green); }
 
-  .log-dmg { color: #f07070; } .log-recv { color: #f09060; } .log-kill { color: var(--gold); } .log-drop { color: var(--cyan); } .log-lvlup { color: var(--green); }
-
-  /* ── Right Panel (Inventory & Enchant) ── */
+  /* ── Right Panel ── */
   .inv-tabs { display: flex; border-bottom: 1px solid var(--border); }
   .inv-tab { flex: 1; padding: 8px 0; text-align: center; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; }
   .inv-tab.active { color: var(--gold); border-color: var(--gold); }
   
   .item-row { display: flex; align-items: center; gap: 8px; padding: 6px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; }
   .item-row:hover { border-color: var(--border2); }
-  .item-icon { font-size: 20px; }
+  .item-icon { font-size: 20px; display:flex; justify-content:center; align-items:center; }
   .item-info { flex: 1; }
-  .item-name { font-size: 11px; color: var(--white); }
+  .item-name { font-size: 11px; color: var(--white); font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
   .item-sub { font-size: 9px; color: var(--text2); margin-top: 2px; }
   .item-req { font-size: 9px; color: var(--red); margin-top: 2px; }
   .item-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
   .item-qty { font-size: 11px; color: var(--gold); font-family: 'Share Tech Mono', monospace; text-align: right; }
 
-  /* ── Notifications & Modals ── */
   #notif-container { position: fixed; top: 60px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
   .notif { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 8px 12px; font-size: 11px; animation: slideIn 2.5s forwards; }
   @keyframes slideIn { 0% { opacity:0; transform:translateX(50px); } 10% { opacity:1; transform:translateX(0); } 90% { opacity:1; transform:translateX(0); } 100% { opacity:0; transform:translateX(50px); } }
 
-  .rarity-common { color: var(--text); } .rarity-uncommon { color: var(--green); } .rarity-rare { color: #70b0f0; } .rarity-epic { color: #c080f0; }
-
-  /* ── รัศมีออร่าตามสไตล์ Ran Online (แสงตามระดับบวก) ── */
-  .equip-slot-val.enchant-low { color: #88ff88; text-shadow: 0 0 5px rgba(136,255,136,0.5); } /* +4 ถึง +6 */
-  .equip-slot-val.enchant-mid { color: #4be8d8; text-shadow: 0 0 8px rgba(75,232,216,0.8); font-weight: bold; } /* +7 ถึง +9 */
-  .equip-slot-val.enchant-high { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,1); font-weight: bold; } /* +10 ถึง +14 */
-  .equip-slot-val.enchant-max { color: #9b59e8; text-shadow: 0 0 12px #9b59e8, 0 0 5px #e8b84b; font-weight: bold; animation: pulseGlow 1s infinite alternate; } /* +15 */
-  
+  .equip-slot-val.enchant-low { color: #88ff88; text-shadow: 0 0 5px rgba(136,255,136,0.5); } 
+  .equip-slot-val.enchant-mid { color: #4be8d8; text-shadow: 0 0 8px rgba(75,232,216,0.8); font-weight: bold; } 
+  .equip-slot-val.enchant-high { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,1); font-weight: bold; } 
+  .equip-slot-val.enchant-max { color: #9b59e8; text-shadow: 0 0 12px #9b59e8, 0 0 5px #e8b84b; font-weight: bold; animation: pulseGlow 1s infinite alternate; } 
   @keyframes pulseGlow { from { text-shadow: 0 0 8px #9b59e8; } to { text-shadow: 0 0 15px #e8b84b; } }
 
-  /* ── ระบบเลือกขาย ── */
   .bulk-sell-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg2); border-bottom: 1px solid var(--border); font-size: 11px; margin-bottom: 8px; }
   .item-check { accent-color: var(--red); width: 14px; height: 14px; cursor: pointer; }
+  .item-stats { font-size: 9px; color: var(--gold2); display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .item-stats span { background: var(--bg1); padding: 2px 4px; border-radius: 2px; border: 1px solid var(--border); }
+  .slot-unequip:hover { border-color: var(--red) !important; background: rgba(232,75,75,0.1) !important; }
 </style>
 </head>
 <body>
 
+<div id="loading-screen">
+  <div class="title-logo" style="font-size:36px;">RAN IDLE</div>
+  <div class="loading-text">LOADING DATABASE...</div>
+</div>
+
 <div id="login-screen">
   <div class="login-box">
-    <div class="title-logo" style="font-size:36px;">RAN</div>
-    <div class="title-sub" style="margin-bottom: 24px;">ACCOUNT LOGIN</div>
-    <input type="text" id="login-user" class="login-input" placeholder="ไอดี (Username)" autocomplete="off">
+    <div class="title-logo" style="font-size:36px;">RAN IDLE</div>
+    <div class="title-sub" style="margin-bottom: 24px;">CAMPUS LEGEND</div>
+    <input type="text" id="login-user" class="login-input" placeholder="รหัสนักเรียน (Username)" autocomplete="off">
     <input type="password" id="login-pass" class="login-input" placeholder="รหัสผ่าน (Password)">
-    <button class="btn btn-primary" id="btn-login" style="width:100%; padding:10px; margin-bottom:12px;" onclick="doLogin()">เริ่มเล่นเกม</button>
+    <button class="btn btn-primary" id="btn-login" style="width:100%; padding:10px; margin-bottom:12px;" onclick="doLogin()">เข้าสู่สถาบัน</button>
     <div style="font-size:10px; color:var(--text3);">ระบบ Auto-Save บันทึกข้อมูลอัตโนมัติ</div>
   </div>
 </div>
 
 <div id="title-screen">
   <div class="title-logo">RAN IDLE</div>
-  <div class="title-sub">EXPANDED EDITION</div>
+  <div class="title-sub">CHOOSE YOUR FACULTY</div>
   <div class="class-grid">
-    <div class="class-card sword" onclick="startGame('sword')"><div class="class-icon">⚔️</div><div class="class-name">ซอร์ดแมน</div><div class="class-desc">ดาเมจสูง HP หนา</div></div>
-    <div class="class-card spear" onclick="startGame('spear')"><div class="class-icon">🏹</div><div class="class-name">สเปียร์แมน</div><div class="class-desc">สมดุล คริติคัลและหลบหลีก</div></div>
-    <div class="class-card bow" onclick="startGame('bow')"><div class="class-icon">🎯</div><div class="class-name">โบว์แมน</div><div class="class-desc">แม่นยำสูง คริติคัลรุนแรง</div></div>
-    <div class="class-card magic" onclick="startGame('magic')"><div class="class-icon">🔮</div><div class="class-name">เมจ</div><div class="class-desc">เวทมนตร์รุนแรง แต่ตัวบาง</div></div>
+    <div class="class-card sword" onclick="startGame('sword')"><div class="class-icon">⚔️</div><div class="class-name">สายดาบ (Swordsman)</div><div class="class-desc">ฟันกระจาย เลือดหนา</div></div>
+    <div class="class-card spear" onclick="startGame('spear')"><div class="class-icon">🥊</div><div class="class-name">สายหมัด (Brawler)</div><div class="class-desc">หลบหลีก พริ้วไหว</div></div>
+    <div class="class-card bow" onclick="startGame('bow')"><div class="class-icon">🎯</div><div class="class-name">สายธนู (Archer)</div><div class="class-desc">ยิงไกล คริติคอลหนัก</div></div>
+    <div class="class-card magic" onclick="startGame('magic')"><div class="class-icon">🔮</div><div class="class-name">สายพระ/เวท (Shaman)</div><div class="class-desc">สกิลหมู่ ดาเมจเวทมหาศาล</div></div>
   </div>
 </div>
 
@@ -191,7 +197,7 @@
 
 <div id="game-screen">
   <div class="topbar">
-    <div class="topbar-logo">RAN</div>
+    <div class="topbar-logo">RAN SG</div>
     <div class="topbar-info">
       <div class="topbar-stat">Lv <span id="tb-lv">1</span></div>
       <div class="topbar-stat">💰 <span id="tb-gold">0</span></div>
@@ -200,17 +206,18 @@
     <button class="btn btn-danger" onclick="resetGame()" style="padding:4px 10px; font-size:10px;">รีเซ็ต</button>
   </div>
   
-  <div class="quest-bar" id="quest-display">เควสปัจจุบัน: ยังไม่มีเควส</div>
+  <div class="quest-bar" id="quest-display">เควสปัจจุบัน: เริ่มต้นสถาบัน</div>
 
   <div class="main-layout">
     <div class="panel">
-      <div class="panel-header">ตัวละคร</div>
+      <div class="panel-header">ข้อมูลนักเรียน</div>
       <div class="panel-body">
         <div class="char-portrait" id="char-icon">⚔️</div>
-        <div class="char-name" id="char-name">ผู้กล้า</div>
+        <div class="char-name" id="char-name">ผู้กล้า SG</div>
         <div class="char-class" id="char-class">Class · Lv 1</div>
         
         <div class="bar-row"><div class="bar-label"><span>HP</span><span id="hp-text">100/100</span></div><div class="bar-track"><div class="bar-fill bar-hp" id="hp-bar" style="width:100%"></div></div></div>
+        <div class="bar-row"><div class="bar-label"><span>MP</span><span id="mp-text">50/50</span></div><div class="bar-track"><div class="bar-fill bar-mp" id="mp-bar" style="width:100%"></div></div></div>
         <div class="bar-row"><div class="bar-label"><span>EXP</span><span id="exp-text">0/100</span></div><div class="bar-track"><div class="bar-fill bar-exp" id="exp-bar" style="width:0%"></div></div></div>
         
         <div class="stat-block">
@@ -225,7 +232,7 @@
         </div>
 
         <div id="stat-points-area" class="stat-alloc-box" style="display:none;">
-          <div style="font-size:10px; color:var(--gold); margin-bottom:4px;">Points: <span id="stat-pts-val">0</span></div>
+          <div style="font-size:10px; color:var(--gold); margin-bottom:4px;">สเตตัสพอยท์: <span id="stat-pts-val">0</span></div>
           <div class="stat-alloc-grid">
             <button class="btn-sm" onclick="allocTemp('str')">+ STR</button>
             <button class="btn-sm" onclick="allocTemp('int')">+ INT</button>
@@ -233,23 +240,23 @@
             <button class="btn-sm" onclick="allocTemp('vit')">+ VIT</button>
           </div>
           <div style="display:flex; gap:2px; margin-top:4px;">
-            <button class="btn-sm" style="flex:1; border-color:var(--green); color:var(--green);" onclick="confirmStats()">ยืนยัน</button>
-            <button class="btn-sm" style="flex:1; border-color:var(--gold); color:var(--gold);" onclick="autoStats()">Auto</button>
+            <button class="btn-sm" style="flex:1; border-color:var(--green); color:var(--green);" onclick="confirmStats()">อัปเกรด</button>
+            <button class="btn-sm" style="flex:1; border-color:var(--gold); color:var(--gold);" onclick="autoStats()">ออโต้</button>
             <button class="btn-sm" style="flex:1; border-color:var(--red); color:var(--red);" onclick="cancelStats()">ยกเลิก</button>
           </div>
         </div>
 
-        <div class="panel-header" style="margin: 8px -10px 8px;">อุปกรณ์สวมใส่</div>
+        <div class="panel-header" style="margin: 8px -10px 8px;">อุปกรณ์สวมใส่ (คลิกเพื่อถอด)</div>
         <div class="equip-grid">
-          <div class="equip-slot"><div class="equip-slot-label">หมวก</div><div class="equip-slot-val" id="eq-hat">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">เสื้อ</div><div class="equip-slot-val" id="eq-shirt">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">กางเกง</div><div class="equip-slot-val" id="eq-pants">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">รองเท้า</div><div class="equip-slot-val" id="eq-shoes">-</div></div>
-          <div class="equip-slot" style="grid-column: span 2; border-color:var(--red2);"><div class="equip-slot-label">อาวุธ</div><div class="equip-slot-val" id="eq-weapon">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">แหวน</div><div class="equip-slot-val" id="eq-ring">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">สร้อย</div><div class="equip-slot-val" id="eq-necklace">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">กำไล</div><div class="equip-slot-val" id="eq-bracelet">-</div></div>
-          <div class="equip-slot"><div class="equip-slot-label">ต่างหู</div><div class="equip-slot-val" id="eq-earring">-</div></div>
+          <div class="equip-slot" id="slot-hat"><div class="equip-slot-label">หมวก</div><div class="equip-slot-val" id="eq-hat">-</div></div>
+          <div class="equip-slot" id="slot-shirt"><div class="equip-slot-label">เสื้อ</div><div class="equip-slot-val" id="eq-shirt">-</div></div>
+          <div class="equip-slot" id="slot-pants"><div class="equip-slot-label">กางเกง</div><div class="equip-slot-val" id="eq-pants">-</div></div>
+          <div class="equip-slot" id="slot-shoes"><div class="equip-slot-label">รองเท้า</div><div class="equip-slot-val" id="eq-shoes">-</div></div>
+          <div class="equip-slot" id="slot-weapon" style="grid-column: span 2; border-color:var(--red2);"><div class="equip-slot-label">อาวุธหลัก</div><div class="equip-slot-val" id="eq-weapon">-</div></div>
+          <div class="equip-slot" id="slot-ring"><div class="equip-slot-label">แหวน</div><div class="equip-slot-val" id="eq-ring">-</div></div>
+          <div class="equip-slot" id="slot-necklace"><div class="equip-slot-label">สร้อย</div><div class="equip-slot-val" id="eq-necklace">-</div></div>
+          <div class="equip-slot" id="slot-bracelet"><div class="equip-slot-label">ปลอกแขน</div><div class="equip-slot-val" id="eq-bracelet">-</div></div>
+          <div class="equip-slot" id="slot-earring"><div class="equip-slot-label">ต่างหู</div><div class="equip-slot-val" id="eq-earring">-</div></div>
         </div>
       </div>
     </div>
@@ -267,21 +274,26 @@
         </div>
 
         <div class="battle-controls">
-          <button class="btn btn-primary" id="btn-battle" onclick="toggleBattle()">▶ เริ่ม Auto</button>
-          <button class="btn btn-danger" id="btn-potion-revive" onclick="usePotion()">🧪 ใช้ยา HP</button>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-battle" onclick="toggleBattle()" style="width:120px;">▶ เริ่ม Auto Bot</button>
+            <button class="btn btn-danger" id="btn-potion-revive" onclick="usePotion('hp')">♨️ ปั๊ม HP</button>
+            <button class="btn btn-blue" onclick="usePotion('mp')">💧 ปั๊ม MP</button>
+          </div>
+          
           <div class="auto-pot-box">
-            <input type="checkbox" id="auto-pot-check">
-            <span>Auto HP <</span>
-            <input type="number" id="auto-pot-pct" value="30" style="width:30px; background:var(--bg1); border:1px solid var(--border); color:var(--text); text-align:center;">%
+            <div class="auto-pot-item">
+              <input type="checkbox" id="auto-pot-hp-check" checked>
+              <span>Auto HP <</span><input type="number" id="auto-pot-hp-pct" value="40" class="auto-pot-input">%
+            </div>
+            <div class="auto-pot-item">
+              <input type="checkbox" id="auto-pot-mp-check" checked>
+              <span>Auto MP <</span><input type="number" id="auto-pot-mp-pct" value="20" class="auto-pot-input">%
+            </div>
           </div>
         </div>
 
         <div class="chat-container">
-          <div class="battle-log" id="battle-log"><div style="color:var(--text2)">ระบบพร้อม เริ่มการต่อสู้ได้เลย!</div></div>
-          <div class="chat-input-area">
-            <input type="text" class="chat-input" placeholder="พิมพ์แชทที่นี่ (เปิดใช้งานเร็วๆ นี้)..." disabled>
-            <button class="chat-btn" disabled>ส่ง</button>
-          </div>
+          <div class="battle-log" id="battle-log"><div style="color:var(--text2)">ยินดีต้อนรับสู่สถาบัน เริ่มเก็บเลเวลได้เลย!</div></div>
         </div>
         
       </div>
@@ -289,22 +301,22 @@
 
     <div class="panel">
       <div class="inv-tabs">
-        <div class="inv-tab active" onclick="switchInvTab('items')">🎒 กระเป๋า</div>
+        <div class="inv-tab active" onclick="switchInvTab('items')">🎒 ล็อกเกอร์</div>
         <div class="inv-tab" onclick="switchInvTab('enchant')">🔨 ตีบวก</div>
-        <div class="inv-tab" onclick="switchInvTab('shop')">🏪 ร้านค้า</div>
+        <div class="inv-tab" onclick="switchInvTab('shop')">🏪 สหกรณ์</div>
       </div>
       
       <div id="inv-items" class="panel-body">
         <div style="margin-bottom:8px; font-size:14px; color:var(--gold); font-family:monospace;">💰 <span id="gold-display">0</span></div>
         <div class="bulk-sell-bar">
           <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="check-all" onchange="toggleAllCheckboxes(this)"> เลือกทั้งหมด</label>
-          <button class="btn-sm" style="background:var(--red2); color:white; border:none; padding:4px 10px;" onclick="sellSelectedItems()">💰 ขายที่เลือก</button>
+          <button class="btn-sm" style="background:var(--red2); color:white; border:none; padding:4px 10px;" onclick="sellSelectedItems()">💰 ขายขยะ</button>
         </div>
         <div id="inventory-list"></div>
       </div>
 
       <div id="inv-enchant" class="panel-body" style="display:none;">
-        <div style="margin-bottom:10px; font-size:10px; color:var(--text2);">อัปเกรดอุปกรณ์ที่สวมใส่อยู่ (สูงสุด +15)<br>⚠️ หากล้มเหลวอุปกรณ์จะแตกสลาย</div>
+        <div style="margin-bottom:10px; font-size:10px; color:var(--text2);">ใช้หินตีบวกอัปเกรดอุปกรณ์ (สูงสุด +15)<br>⚠️ ตั้งแต่ +4 มีโอกาสแหก</div>
         <div id="enchant-list"></div>
       </div>
 
@@ -318,76 +330,25 @@
 <div id="notif-container"></div>
 
 <script>
+// ⬇️⬇️⬇️ URL การเชื่อมต่อฐานข้อมูล Google Apps Script ⬇️⬇️⬇️
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgbzJ7ZOeN_u2Wv-OFiayO4TiKLDBDaJ2mBw1Ic24attUSE8jiofOhyWkQK6TRhnErEA/exec'; 
+
 // ══════════════════════════════════════════════
-//  GAME DATA
+//  SYSTEM VARIABLES & DYNAMIC DATA
 // ══════════════════════════════════════════════
 const CLASS_DATA = {
-  sword: { name: 'Swordman', icon: '⚔️', base: { str:10, int:2, dex:4, vit:8 }, auto: ['str','str','str','vit','vit'] },
-  spear: { name: 'Spearman', icon: '🏹', base: { str:8, int:2, dex:8, vit:6 }, auto: ['str','str','dex','dex','vit'] },
-  bow:   { name: 'Archer',   icon: '🎯', base: { str:4, int:2, dex:12, vit:4 }, auto: ['dex','dex','dex','dex','str'] },
-  magic: { name: 'Mage',     icon: '🔮', base: { str:2, int:12, dex:4, vit:4 }, auto: ['int','int','int','int','vit'] },
+  sword: { name: 'สายดาบ (Sword)', icon: '⚔️', base: { str:10, int:2, dex:4, vit:8 }, auto: ['str','str','str','vit','vit'], skill: { name: 'ดาบผ่าอากาศ', cost: 10, multi: 2.2 } },
+  spear: { name: 'สายหมัด (Brawler)', icon: '🥊', base: { str:8, int:2, dex:8, vit:6 }, auto: ['dex','dex','str','str','vit'], skill: { name: 'หมัดระเบิดพสุธา', cost: 8, multi: 2.0 } },
+  bow:   { name: 'สายธนู (Archer)',   icon: '🎯', base: { str:4, int:2, dex:12, vit:4 }, auto: ['dex','dex','dex','dex','str'], skill: { name: 'ศรทะลวงวิญญาณ', cost: 12, multi: 2.5 } },
+  magic: { name: 'สายเวท (Shaman)',   icon: '🔮', base: { str:2, int:12, dex:4, vit:4 }, auto: ['int','int','int','int','vit'], skill: { name: 'ลูกไฟบรรลัยกัลป์', cost: 18, multi: 3.5 } }, 
 };
-
-const ZONES = [
-  { id: 'school', name: 'School Yard', icon: '🏫', unlockLv: 1, reqBosses: 5, nextZone: 'forest', monsters: [
-      { name: 'นักเรียนอันธพาล', icon: '👊', hp: 50, atk: 10, def: 2, exp: 15, gold: [5,10], drop: { 'ยาฟื้นฟูเล็ก': 0.3, 'หมวกผ้า': 0.1, 'ดาบสั้น': 0.05, 'หอกไม้': 0.05, 'ธนูไม้':0.05, 'คทาไม้':0.05 } },
-      { name: 'สุนัขดุ', icon: '🐕', hp: 80, atk: 15, def: 3, exp: 25, gold: [8,15], drop: { 'รองเท้าแตะ': 0.1, 'กางเกงขาสั้น': 0.1 } },
-  ]},
-  { id: 'forest', name: 'Dark Forest', icon: '🌲', unlockLv: 10, reqBosses: 10, nextZone: 'ruins', monsters: [
-      { name: 'หมาป่า', icon: '🐺', hp: 300, atk: 45, def: 12, exp: 80, gold: [20,40], drop: { 'ยาฟื้นฟูกลาง': 0.3, 'เสื้อยืด': 0.1, 'แหวนทองแดง': 0.05 } },
-      { name: 'หมีดำ', icon: '🐻', hp: 600, atk: 70, def: 25, exp: 150, gold: [30,60], drop: { 'ดาบเหล็กกล้า':0.05, 'หอกเหล็ก':0.05, 'ธนูเหล็ก':0.05, 'คทาเวท':0.05 } },
-  ]},
-  { id: 'ruins', name: 'Ancient Ruins', icon: '🏚️', unlockLv: 25, reqBosses: 999, nextZone: null, monsters: [
-      { name: 'โครงกระดูก', icon: '💀', hp: 1500, atk: 150, def: 50, exp: 400, gold: [80,150], drop: { 'หมวกเหล็ก': 0.1, 'เกราะเหล็ก': 0.1, 'สร้อยเงิน': 0.05 } },
-      { name: 'อัศวินมืด', icon: '🖤', hp: 3500, atk: 280, def: 100, exp: 1000, gold: [200,400], drop: { 'ดาบอัศวิน':0.02, 'หอกมังกร':0.02, 'ธนูวิเศษ':0.02, 'คทาจอมราชันย์':0.02 } },
-  ]}
-];
 
 const EQUIP_SLOTS = ['hat','shirt','pants','shoes','weapon','ring','necklace','bracelet','earring'];
 
-const ITEMS = {
-  // Potions
-  'ยาฟื้นฟูเล็ก': { icon: '🩹', type: 'potion', heal: 50, rarity: 'common', desc: 'ฟื้นฟู HP 50', sell: 5 },
-  'ยาฟื้นฟูกลาง': { icon: '🧪', type: 'potion', heal: 200, rarity: 'uncommon', desc: 'ฟื้นฟู HP 200', sell: 20 },
-  
-  // Weapons
-  'ดาบสั้น':       { icon: '🗡️', type: 'weapon', reqLv: 1, reqClass: 'sword', atk: 15, rarity: 'common', sell: 50 },
-  'ดาบเหล็กกล้า':  { icon: '⚔️', type: 'weapon', reqLv: 10, reqClass: 'sword', atk: 60, str: 10, rarity: 'uncommon', sell: 300 },
-  'ดาบอัศวิน':     { icon: '🗡️', type: 'weapon', reqLv: 25, reqClass: 'sword', atk: 200, str: 30, rarity: 'rare', sell: 1500 },
-  
-  'หอกไม้':        { icon: '🦯', type: 'weapon', reqLv: 1, reqClass: 'spear', atk: 12, dex: 5, rarity: 'common', sell: 50 },
-  'หอกเหล็ก':      { icon: '🔱', type: 'weapon', reqLv: 10, reqClass: 'spear', atk: 55, dex: 15, rarity: 'uncommon', sell: 300 },
-  'หอกมังกร':      { icon: '🐉', type: 'weapon', reqLv: 25, reqClass: 'spear', atk: 180, dex: 40, rarity: 'rare', sell: 1500 },
-  
-  'ธนูไม้':        { icon: '🏹', type: 'weapon', reqLv: 1, reqClass: 'bow', atk: 10, dex: 8, rarity: 'common', sell: 50 },
-  'ธนูเหล็ก':      { icon: '🏹', type: 'weapon', reqLv: 10, reqClass: 'bow', atk: 45, dex: 25, rarity: 'uncommon', sell: 300 },
-  'ธนูวิเศษ':      { icon: '✨', type: 'weapon', reqLv: 25, reqClass: 'bow', atk: 150, dex: 60, rarity: 'rare', sell: 1500 },
-  
-  'คทาไม้':        { icon: '🪄', type: 'weapon', reqLv: 1, reqClass: 'magic', atk: 20, int: 10, rarity: 'common', sell: 50 },
-  'คทาเวท':        { icon: '🔮', type: 'weapon', reqLv: 10, reqClass: 'magic', atk: 80, int: 30, rarity: 'uncommon', sell: 300 },
-  'คทาจอมราชันย์': { icon: '👑', type: 'weapon', reqLv: 25, reqClass: 'magic', atk: 250, int: 80, rarity: 'rare', sell: 1500 },
-
-  // Armors
-  'หมวกผ้า':       { icon: '🧢', type: 'hat', reqLv: 1, def: 5, hp: 20, rarity: 'common', sell: 30 },
-  'หมวกเหล็ก':     { icon: '⛑️', type: 'hat', reqLv: 10, def: 25, hp: 100, rarity: 'uncommon', sell: 200 },
-  'เสื้อยืด':      { icon: '👕', type: 'shirt', reqLv: 1, def: 10, vit: 2, rarity: 'common', sell: 40 },
-  'เกราะเหล็ก':    { icon: '🛡️', type: 'shirt', reqLv: 10, def: 40, vit: 10, rarity: 'uncommon', sell: 250 },
-  'กางเกงขาสั้น':  { icon: '🩳', type: 'pants', reqLv: 1, def: 5, rarity: 'common', sell: 30 },
-  'กางเกงเหล็ก':   { icon: '👖', type: 'pants', reqLv: 10, def: 20, vit: 5, rarity: 'uncommon', sell: 200 },
-  'รองเท้าแตะ':    { icon: '🩴', type: 'shoes', reqLv: 1, def: 2, dex: 2, rarity: 'common', sell: 20 },
-  'รองเท้าบูทเหล็ก':{ icon: '🥾', type: 'shoes', reqLv: 10, def: 15, dex: 10, rarity: 'uncommon', sell: 150 },
-
-  // Accessories
-  'แหวนทองแดง':   { icon: '💍', type: 'ring', reqLv: 5, str: 5, int: 5, rarity: 'uncommon', sell: 100 },
-  'สร้อยเงิน':    { icon: '📿', type: 'necklace', reqLv: 15, vit: 15, hp: 200, rarity: 'rare', sell: 500 },
-};
-
-const SHOP_ITEMS = [
-  { name: 'ยาฟื้นฟูเล็ก', price: 20 },
-  { name: 'ยาฟื้นฟูกลาง', price: 80 },
-  { name: 'หมวกผ้า', price: 150 },
-  { name: 'เสื้อยืด', price: 200 },
-];
+let ITEMS = {};
+let ZONES = [];
+let MONSTERS = [];
+let SHOP_ITEMS = [];
 
 let G = null; 
 let tempStats = { str:0, int:0, dex:0, vit:0, pts:0 };
@@ -396,53 +357,151 @@ let currentZone = null;
 let currentMon = null;
 let monHp = 0;
 let battleRunning = false;
+let currentUser = '', currentPass = '', cloudTimer = null;
+
+function getIconHtml(iconData, size = 60) {
+  if (!iconData) return '';
+  if (iconData.includes('drive.google.com/file/d/')) {
+    const match = iconData.match(/\/d\/(.+?)(\/|$)/);
+    if (match && match[1]) {
+      return `<img src="https://drive.google.com/uc?export=view&id=${match[1]}" style="width:${size}px; height:${size}px; object-fit:contain;">`;
+    }
+  } else if (iconData.startsWith('http')) {
+    return `<img src="${iconData}" style="width:${size}px; height:${size}px; object-fit:contain;">`;
+  }
+  return iconData;
+}
 
 // ══════════════════════════════════════════════
-//  INIT
+//  DATABASE FETCHING & PARSING
+// ══════════════════════════════════════════════
+window.onload = async () => {
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: 'fetch_db' })
+    });
+    const json = await res.json();
+    
+    if (json.success) {
+      json.data.items.forEach(it => {
+         ITEMS[it.Name] = {
+            icon: it.Icon, type: it.Type, reqLv: parseInt(it.ReqLv)||1, reqClass: it.ReqClass,
+            heal: parseInt(it.Heal)||0, rarity: it.Rarity||'common', sell: parseInt(it.SellPrice)||0, desc: it.Desc||''
+         };
+         if(it.Type === 'potion_hp' || it.Type === 'potion_mp' || (parseInt(it.ReqLv) === 10 && it.Type === 'shirt')) {
+             SHOP_ITEMS.push({ name: it.Name, price: parseInt(it.SellPrice) * 10 }); 
+         }
+      });
+
+      MONSTERS = json.data.monsters.map(m => {
+         return {
+            name: m.Name, icon: m.Icon, level: parseInt(m.Level)||1,
+            hpMulti: parseFloat(m.HpMulti)||10, atkMulti: parseFloat(m.AtkMulti)||2,
+            defMulti: parseFloat(m.DefMulti)||1, expMulti: parseFloat(m.ExpMulti)||5,
+            gb: parseFloat(m.GoldBase)||2
+         };
+      });
+
+      ZONES = json.data.zones.map(z => {
+         let dropArr = [];
+         if (z.DropItems) {
+            z.DropItems.split(',').forEach(d => {
+               let parts = d.split(':');
+               if(parts.length === 2) dropArr.push({ rule: parts[0].trim(), rate: parseFloat(parts[1].trim()) });
+            });
+         }
+         return {
+            id: z.ZoneID, name: z.Name, icon: z.Icon, 
+            unlockLv: parseInt(z.UnlockLv)||1, maxLv: parseInt(z.MaxLv)||10,
+            reqBosses: parseInt(z.ReqBosses)||0, nextZone: z.NextZone, drop: dropArr
+         };
+      });
+
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      
+    } else { alert("ไม่สามารถโหลด Database ได้"); }
+  } catch(e) { alert("การเชื่อมต่อล้มเหลว ตรวจสอบ URL หรือ Internet"); }
+};
+
+// ══════════════════════════════════════════════
+//  INIT & MIGRATION
 // ══════════════════════════════════════════════
 function startGame(cls) {
   const cd = CLASS_DATA[cls];
   G = {
     cls, level: 1, exp: 0, expNext: 100, gold: 100, statPts: 0,
     str: cd.base.str, int: cd.base.int, dex: cd.base.dex, vit: cd.base.vit,
-    hp: 0, maxHp: 0, inventory: {}, equipment: {}, enchants: {}, quests: { 'school': 0, 'forest': 0, 'ruins': 0 }
+    hp: 0, maxHp: 0, mp: 0, maxMp: 0, inventory: {}, inventoryEq: {}, equipment: {}, quests: {}
   };
-  EQUIP_SLOTS.forEach(s => { G.equipment[s] = null; G.enchants[s] = 0; });
-  calcDerivedStats(); G.hp = G.maxHp;
+  EQUIP_SLOTS.forEach(s => G.equipment[s] = null);
+  ZONES.forEach(z => G.quests[z.id] = 0);
+  
+  calcDerivedStats(); G.hp = G.maxHp; G.mp = G.maxMp;
   document.getElementById('title-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('char-icon').textContent = cd.icon;
-  buildZoneTabs(); buildShop(); selectZone(ZONES[0]); renderAll();
+  buildZoneTabs(); buildShop(); checkQuest(); renderAll();
   saveLocal(); manualSaveToCloud(); startAutoSaveSystem();
+}
+
+function migrateSaveData() {
+  if (!G) return;
+  if (!G.inventoryEq) G.inventoryEq = {};
+  if (G.mp === undefined) G.mp = 0;
+  
+  EQUIP_SLOTS.forEach(slot => {
+    const name = G.equipment[slot];
+    if (name && !name.startsWith('eq_') && ITEMS[name]) {
+      const uid = 'eq_' + Math.random().toString(36).substr(2, 9);
+      const base = ITEMS[name];
+      const enchantLvl = (G.enchants && G.enchants[slot]) ? G.enchants[slot] : 0;
+      G.inventoryEq[uid] = { uid, name, enchant: enchantLvl, atk: base.atk, def: base.def, str: base.str, int: base.int, dex: base.dex, vit: base.vit, hp: base.hp, color: '#c8d0e8' };
+      G.equipment[slot] = uid;
+    }
+  });
+  if(G.enchants) delete G.enchants;
+
+  Object.keys(G.inventory).forEach(name => {
+    if (ITEMS[name] && EQUIP_SLOTS.includes(ITEMS[name].type)) {
+      const qty = G.inventory[name];
+      for(let i=0; i<qty; i++) {
+         const uid = 'eq_' + Math.random().toString(36).substr(2, 9);
+         const base = ITEMS[name];
+         G.inventoryEq[uid] = { uid, name, enchant: 0, atk: base.atk, def: base.def, str: base.str, int: base.int, dex: base.dex, vit: base.vit, hp: base.hp, color: '#c8d0e8' };
+      }
+      delete G.inventory[name];
+    }
+  });
 }
 
 function calcDerivedStats() {
   let bAtk = 0, bDef = 0, bStr = 0, bInt = 0, bDex = 0, bVit = 0, bHp = 0;
-  let bCrit = 0, bDodge = 0; // เพิ่มค่าคริ/หลบ
+  let bCrit = 0, bDodge = 0; 
   
   EQUIP_SLOTS.forEach(slot => {
-    const itemName = G.equipment[slot];
-    if (itemName && ITEMS[itemName]) {
-      const it = ITEMS[itemName];
-      const elv = G.enchants[slot] || 0;
+    const uid = G.equipment[slot];
+    if (uid && G.inventoryEq[uid]) {
+      const eq = G.inventoryEq[uid];
+      const elv = eq.enchant || 0;
       
-      // การตีบวกแบบ Ran Online: ตัวคูณ + ค่า Fix Stat มหาศาลเมื่อบวกสูง
       const multi = 1 + (elv * 0.20); 
-      const flatAtk = elv > 0 ? (elv * elv * 2) : 0; // ทวีคูณความแรงเมื่อบวกสูง (15x15x2 = 450)
+      const flatAtk = elv > 0 ? (elv * elv * 2) : 0; 
       const flatDef = elv > 0 ? (elv * elv * 1.5) : 0;
       const flatHp  = elv > 0 ? (elv * 50) : 0;
 
-      bAtk += Math.floor((it.atk||0) * multi) + flatAtk;
-      bDef += Math.floor((it.def||0) * multi) + Math.floor(flatDef);
-      bStr += Math.floor((it.str||0) * multi);
-      bInt += Math.floor((it.int||0) * multi);
-      bDex += Math.floor((it.dex||0) * multi);
-      bVit += Math.floor((it.vit||0) * multi);
-      bHp  += Math.floor((it.hp||0) * multi) + flatHp;
+      bAtk += Math.floor((eq.atk||0) * multi) + flatAtk;
+      bDef += Math.floor((eq.def||0) * multi) + Math.floor(flatDef);
+      bStr += Math.floor((eq.str||0) * multi);
+      bInt += Math.floor((eq.int||0) * multi);
+      bDex += Math.floor((eq.dex||0) * multi);
+      bVit += Math.floor((eq.vit||0) * multi);
+      bHp  += Math.floor((eq.hp||0) * multi) + flatHp;
 
-      // เอฟเฟกต์แฝงของการตีบวก: อาวุธบวกสูงได้คริติคอล / ชุดรองเท้าได้หลบหลีก
-      if (slot === 'weapon') bCrit += elv * 1; 
-      if (slot === 'shoes' || slot === 'pants') bDodge += elv * 1.5;
+      bCrit += (eq.crit||0) + (slot === 'weapon' ? elv * 1 : 0);
+      bDodge += (eq.dodge||0) + ((slot === 'shoes' || slot === 'pants') ? elv * 1.5 : 0);
     }
   });
 
@@ -452,22 +511,21 @@ function calcDerivedStats() {
   const eVit = G.vit + tempStats.vit + bVit;
 
   G.maxHp = 100 + (eVit * 15) + ((G.level - 1) * 12) + bHp;
+  G.maxMp = 50 + (eInt * 10) + ((G.level - 1) * 5);
   
-  if (G.cls === 'sword')  G.atk = Math.floor(eStr * 1.8 + bAtk + G.level * 2);
-  else if (G.cls === 'spear') G.atk = Math.floor(eStr * 1.2 + eDex * 1.2 + bAtk + G.level * 2);
-  else if (G.cls === 'bow')   G.atk = Math.floor(eDex * 1.6 + bAtk + G.level * 1.5);
-  else                         G.atk = Math.floor(eInt * 2.2 + bAtk + G.level * 2);
+  if (G.cls === 'sword')       G.atk = Math.floor(eStr * 1.8 + bAtk + G.level * 2);
+  else if (G.cls === 'spear')  G.atk = Math.floor(eStr * 1.2 + eDex * 1.2 + bAtk + G.level * 2);
+  else if (G.cls === 'bow')    G.atk = Math.floor(eDex * 1.6 + bAtk + G.level * 1.5);
+  else if (G.cls === 'magic')  G.atk = Math.floor(eInt * 2.5 + bAtk + G.level * 2);
 
   G.def  = Math.floor((eVit * 0.8) + bDef + G.level * 1.5);
-
-  // คำนวณ Critical และ Dodge Rate (Max 80%)
   G.crit = Math.min(80, Math.floor((eDex * 0.2) + bCrit)); 
   G.dodge = Math.min(80, Math.floor((eDex * 0.3) + bDodge));
+  
+  if(G.hp > G.maxHp) G.hp = G.maxHp;
+  if(G.mp > G.maxMp) G.mp = G.maxMp;
 }
 
-// ══════════════════════════════════════════════
-//  STATS ALLOCATION
-// ══════════════════════════════════════════════
 function allocTemp(s) {
   if (G.statPts - tempStats.pts > 0 && G.hp > 0) { tempStats[s]++; tempStats.pts++; calcDerivedStats(); renderStats(); }
 }
@@ -476,7 +534,7 @@ function confirmStats() {
   G.str += tempStats.str; G.int += tempStats.int; G.dex += tempStats.dex; G.vit += tempStats.vit;
   G.statPts -= tempStats.pts;
   tempStats = {str:0, int:0, dex:0, vit:0, pts:0};
-  calcDerivedStats(); renderAll(); saveLocal(); showNotif('อัปเดตสถานะเรียบร้อย', 'notif-lvlup');
+  calcDerivedStats(); renderAll(); saveLocal(); showNotif('อัปเดตสเตตัสเรียบร้อย', 'notif-lvlup');
 }
 function cancelStats() {
   tempStats = {str:0, int:0, dex:0, vit:0, pts:0}; calcDerivedStats(); renderStats();
@@ -493,24 +551,49 @@ function autoStats() {
   calcDerivedStats(); renderStats();
 }
 
-// ══════════════════════════════════════════════
-//  BATTLE & QUESTS
-// ══════════════════════════════════════════════
 function checkQuest() {
   if (!currentZone) return;
   const qBar = document.getElementById('quest-display');
   const kills = G.quests[currentZone.id] || 0;
-  if (currentZone.nextZone) {
-    if (kills >= currentZone.reqBosses) {
-      qBar.innerHTML = `✅ ปลดล็อกโซนต่อไปแล้ว! (กำจัดบอส ${kills}/${currentZone.reqBosses})`;
-      qBar.style.color = 'var(--green)';
+  const nextZ = ZONES.find(z => z.id === currentZone.nextZone);
+  const reqBosses = currentZone.reqBosses || 0;
+
+  if (nextZ) {
+    if (nextZ.unlockLv >= 30 || reqBosses <= 0) {
+      if (G.level >= nextZ.unlockLv) {
+        qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`;
+        qBar.style.color = 'var(--green)';
+      } else {
+        qBar.innerHTML = `⭐ เควส: ฟาร์มเลเวลให้ถึง Lv.${nextZ.unlockLv} เพื่อเข้าสู่ ${nextZ.name}`;
+        qBar.style.color = 'var(--cyan)';
+      }
     } else {
-      qBar.innerHTML = `⚔️ เควส: กำจัด 👑 [BOSS] ใน ${currentZone.name} (${kills}/${currentZone.reqBosses})`;
-      qBar.style.color = 'var(--cyan)';
+      if (kills >= reqBosses) {
+        if (G.level >= nextZ.unlockLv) {
+           qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`;
+           qBar.style.color = 'var(--green)';
+        } else {
+           qBar.innerHTML = `⭐ เคลียร์บอสแล้ว! ฟาร์มเลเวลต่อให้ถึง Lv.${nextZ.unlockLv} เพื่อไปโซนถัดไป`;
+           qBar.style.color = 'var(--cyan)';
+        }
+      } else {
+        qBar.innerHTML = `⚔️ เควส: กำจัด 👑 [BOSS] ใน ${currentZone.name} (${kills}/${reqBosses})`;
+        qBar.style.color = 'var(--cyan)';
+      }
     }
   } else {
-    qBar.innerHTML = `🌟 ดินแดนสุดท้าย! จงฟาร์มอุปกรณ์ให้เทพที่สุด!`;
-    qBar.style.color = 'var(--gold)';
+    if (reqBosses > 0) {
+      if (kills >= reqBosses) {
+        qBar.innerHTML = `✅ สำเร็จภารกิจกำจัดบอส! 🚩 พื้นที่ฟาร์มอิสระ`;
+        qBar.style.color = 'var(--green)';
+      } else {
+        qBar.innerHTML = `⚔️ เควสประจำโซน: กำจัด 👑 [BOSS] (${kills}/${reqBosses})`;
+        qBar.style.color = 'var(--cyan)';
+      }
+    } else {
+      qBar.innerHTML = `🚩 พื้นที่ฟาร์มอิสระ: ล่ามอนสเตอร์และตามหาไอเทมระดับตำนาน!`;
+      qBar.style.color = 'var(--gold)';
+    }
   }
   buildZoneTabs();
 }
@@ -518,35 +601,65 @@ function checkQuest() {
 function selectZone(zone) {
   if (G.level < zone.unlockLv) { showNotif(`ต้องการ Lv ${zone.unlockLv}`, 'notif-die'); return; }
   const zIdx = ZONES.findIndex(z => z.id === zone.id);
-  if (zIdx > 0) {
+  
+  if (zIdx > 0 && zone.unlockLv < 30) {
     const prevZ = ZONES[zIdx-1];
-    if ((G.quests[prevZ.id]||0) < prevZ.reqBosses) {
+    if (prevZ.reqBosses > 0 && (G.quests[prevZ.id]||0) < prevZ.reqBosses) {
       showNotif(`ทำเควสบอส ${prevZ.name} ก่อน`, 'notif-die'); return;
     }
   }
+  
   currentZone = zone; spawnMonster(); checkQuest();
-  document.getElementById('zone-name-display').textContent = zone.icon + ' ' + zone.name;
+  
+  document.getElementById('zone-name-display').innerHTML = getIconHtml(zone.icon, 16) + ' ' + zone.name;
   document.querySelectorAll('.zone-tab').forEach(t => t.classList.toggle('active', t.dataset.id === zone.id));
   log(`<span style="color:var(--purple)">── เข้าสู่ ${zone.name} ──</span>`);
 }
 
 function spawnMonster() {
-  const isBoss = Math.random() < 0.1; 
-  const baseM = currentZone.monsters[Math.floor(Math.random() * currentZone.monsters.length)];
-  currentMon = JSON.parse(JSON.stringify(baseM));
+  if (!currentZone || !MONSTERS || MONSTERS.length === 0) return;
   
-  if (isBoss) {
-    currentMon.name = "👑 [BOSS] " + currentMon.name;
-    currentMon.isBoss = true;
-    currentMon.hp *= 5; currentMon.atk *= 2; currentMon.def *= 2; currentMon.exp *= 5;
-    currentMon.gold = [currentMon.gold[0]*5, currentMon.gold[1]*5];
+  let targetLv = Math.min(G.level, currentZone.maxLv);
+  let availableMons = MONSTERS.filter(m => m.level >= targetLv - 5 && m.level <= targetLv + 5);
+  
+  if (availableMons.length === 0) {
+     let higherMons = MONSTERS.filter(m => m.level > targetLv + 5).sort((a,b) => a.level - b.level);
+     if (higherMons.length > 0) availableMons = [higherMons[0]];
+     else {
+         let allMonsSorted = [...MONSTERS].sort((a,b) => b.level - a.level);
+         availableMons = [allMonsSorted[0]];
+     }
   }
+
+  const isBoss = Math.random() < 0.1; 
+  const baseM = availableMons[Math.floor(Math.random() * availableMons.length)];
+  
+  let hp = Math.floor(targetLv * baseM.hpMulti);
+  let atk = Math.floor(targetLv * baseM.atkMulti);
+  let def = Math.floor(targetLv * baseM.defMulti);
+  let exp = Math.floor(targetLv * baseM.expMulti);
+  let goldArr = [Math.floor(targetLv * baseM.gb), Math.floor(targetLv * baseM.gb * 1.5)];
+
+  if (isBoss) {
+    hp *= 5; atk *= 2; def *= 2; exp *= 5;
+    goldArr = [goldArr[0]*5, goldArr[1]*5];
+  }
+
+  currentMon = {
+     name: (isBoss ? "👑 [BOSS] " : "") + baseM.name,
+     icon: baseM.icon,
+     isBoss: isBoss,
+     level: targetLv,
+     hp: hp, atk: atk, def: def, exp: exp, gold: goldArr
+  };
   monHp = currentMon.hp;
   
   const mNameEl = document.getElementById('mon-name');
-  mNameEl.textContent = currentMon.name;
+  mNameEl.textContent = `Lv.${currentMon.level} ${currentMon.name}`;
   if (isBoss) mNameEl.classList.add('boss'); else mNameEl.classList.remove('boss');
-  document.getElementById('mon-icon').textContent = currentMon.icon;
+  
+  document.getElementById('mon-icon').innerHTML = getIconHtml(currentMon.icon, 60);
+  
   document.getElementById('mon-hp-bar').style.width = '100%';
   document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
 }
@@ -557,29 +670,46 @@ function toggleBattle() {
   battleRunning = !battleRunning;
   const btn = document.getElementById('btn-battle');
   if (battleRunning) { btn.textContent = '⏸ หยุด Auto'; doBattle(); battleTimer = setInterval(doBattle, 1500); }
-  else { btn.textContent = '▶ เริ่ม Auto'; clearInterval(battleTimer); }
+  else { btn.textContent = '▶ เริ่ม Auto Bot'; clearInterval(battleTimer); }
 }
 
 function doBattle() {
   if (!currentMon || G.hp <= 0) return;
   
-  // ── ผู้เล่นโจมตีมอนสเตอร์ (คำนวณคริติคอล) ──
+  const skillInfo = CLASS_DATA[G.cls].skill;
+  let useSkill = false;
+  
+  if (G.mp >= skillInfo.cost && Math.random() < 0.25) {
+     useSkill = true;
+     G.mp -= skillInfo.cost;
+  }
+  
   const isCrit = Math.random() * 100 <= (G.crit || 0);
   let dmg = Math.max(1, G.atk - currentMon.def + Math.floor(Math.random() * (G.atk * 0.2)));
   
-  if (isCrit) {
-    dmg = Math.floor(dmg * 1.5); // แรงขึ้น 1.5 เท่า
-    log(`<span class="log-dmg" style="color:#ffdd00; font-weight:bold; font-size:12px;">⚡ คริติคอล! -${dmg.toLocaleString()}</span>`);
+  if (useSkill) {
+    dmg = Math.floor(dmg * skillInfo.multi);
+    if(isCrit) dmg = Math.floor(dmg * 1.5);
+    log(`<span class="log-skill">✨ ใช้สกิล [${skillInfo.name}]! ดาเมจ -${dmg.toLocaleString()}</span>`);
   } else {
-    log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`);
+    if (isCrit) {
+      dmg = Math.floor(dmg * 1.5); 
+      log(`<span class="log-dmg" style="color:#ffdd00; font-weight:bold;">⚡ คริติคอล! -${dmg.toLocaleString()}</span>`);
+    } else {
+      log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`);
+    }
   }
   
   monHp = Math.max(0, monHp - dmg);
 
   if (monHp <= 0) {
     const expGain = currentMon.exp;
-    const goldGain = currentMon.gold[0] + Math.floor(Math.random() * (currentMon.gold[1] - currentMon.gold[0]));
+    const goldMin = currentMon.gold[0] || 0;
+    const goldMax = currentMon.gold[1] || goldMin;
+    const goldGain = goldMin + Math.floor(Math.random() * (goldMax - goldMin + 1));
     G.exp += expGain; G.gold += goldGain;
+    
+    G.mp = Math.min(G.maxMp, G.mp + Math.floor(G.maxMp * 0.05)); 
     
     if (currentMon.isBoss) {
       G.quests[currentZone.id] = (G.quests[currentZone.id] || 0) + 1;
@@ -589,17 +719,47 @@ function doBattle() {
       log(`<span class="log-kill">✨ ชนะ! EXP +${expGain} | Gold +${goldGain}</span>`);
     }
 
-    for (const [itemName, rate] of Object.entries(currentMon.drop)) {
-      if (Math.random() < rate) {
-        G.inventory[itemName] = (G.inventory[itemName] || 0) + 1;
-        log(`<span class="log-drop">💎 ได้รับ: ${ITEMS[itemName].icon} ${itemName}</span>`);
-      }
+    if (currentZone.drop && currentZone.drop.length > 0) {
+      currentZone.drop.forEach(d => {
+        if (Math.random() < d.rate) {
+          let itemName = null;
+          
+          if (d.rule === 'auto_equip') {
+            const maxLv = currentZone.maxLv;
+            const minLv = Math.max(1, maxLv - 15); 
+            
+            const possible = Object.keys(ITEMS).filter(k => {
+               const it = ITEMS[k];
+               return EQUIP_SLOTS.includes(it.type) && it.reqLv >= minLv && it.reqLv <= maxLv;
+            });
+            if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
+          } 
+          else if (d.rule === 'auto_potion') {
+            const possible = Object.keys(ITEMS).filter(k => ITEMS[k].type.startsWith('potion'));
+            if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
+          } 
+          else {
+            itemName = d.rule; 
+          }
+
+          if (itemName && ITEMS[itemName]) {
+            if (EQUIP_SLOTS.includes(ITEMS[itemName].type)) {
+               const newEq = createEquip(itemName);
+               G.inventoryEq[newEq.uid] = newEq;
+               log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} <span style="color:${newEq.color}; font-weight:bold;">[${newEq.rarityTier}] ${itemName}</span></span>`);
+            } else {
+               G.inventory[itemName] = (G.inventory[itemName] || 0) + 1;
+               log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} ${itemName}</span>`);
+            }
+          }
+        }
+      });
     }
 
     while (G.exp >= G.expNext) {
       G.exp -= G.expNext; G.level++; G.statPts += 5;
       G.expNext = Math.floor(100 * Math.pow(1.2, G.level - 1));
-      calcDerivedStats(); G.hp = G.maxHp;
+      calcDerivedStats(); G.hp = G.maxHp; G.mp = G.maxMp;
       log(`<span class="log-lvlup">★ LEVEL UP! → Lv ${G.level} ★</span>`);
       showNotif(`Level Up! Lv.${G.level}`, 'notif-lvlup');
       buildZoneTabs();
@@ -607,7 +767,6 @@ function doBattle() {
     spawnMonster(); renderAll(); saveLocal(); return;
   }
 
-  // ── มอนสเตอร์สวนกลับ (คำนวณหลบหลีก) ──
   const isDodge = Math.random() * 100 <= (G.dodge || 0);
   if (isDodge) {
     log(`<span style="color:var(--cyan);">💨 หลบหลีกสำเร็จ! (Miss)</span>`);
@@ -616,21 +775,24 @@ function doBattle() {
     G.hp = Math.max(0, G.hp - monDmg);
     
     if (G.hp <= 0) {
-      let expLoss = Math.floor(G.expNext * 0.05); // หัก 5% ของหลอดต่อไป
+      let expLoss = Math.floor(G.expNext * 0.05);
       G.exp = Math.max(0, G.exp - expLoss);
       
-      log(`<span style="color:var(--red)">💀 คุณเสียชีวิต! สูญเสีย EXP -${expLoss}</span>`);
-      showNotif('💀 คุณเสียชีวิต!', 'notif-die');
+      log(`<span style="color:var(--red)">💀 คุณร่วงแล้ว! หัก EXP -${expLoss}</span>`);
+      showNotif('💀 น็อคเอาท์!', 'notif-die');
       if (battleRunning) toggleBattle();
       G.hp = 0;
-    } else {
-      // Auto Potion Logic
-      if (document.getElementById('auto-pot-check').checked) {
-        const pct = parseInt(document.getElementById('auto-pot-pct').value) || 30;
-        if ((G.hp / G.maxHp * 100) <= pct) {
-          usePotion(true); 
-        }
-      }
+    } 
+  }
+  
+  if (G.hp > 0) {
+    if (document.getElementById('auto-pot-hp-check').checked) {
+      const hpPct = parseInt(document.getElementById('auto-pot-hp-pct').value) || 40;
+      if ((G.hp / G.maxHp * 100) <= hpPct) usePotion('hp', true); 
+    }
+    if (document.getElementById('auto-pot-mp-check').checked) {
+      const mpPct = parseInt(document.getElementById('auto-pot-mp-pct').value) || 20;
+      if ((G.mp / G.maxMp * 100) <= mpPct) usePotion('mp', true); 
     }
   }
   
@@ -641,120 +803,220 @@ function doBattle() {
 }
 
 // ══════════════════════════════════════════════
-//  ITEMS, POTIONS, ENCHANT, DEATH
+//  ✅ AUTO-SCALING STATS & RNG SYSTEM
 // ══════════════════════════════════════════════
+function createEquip(name) {
+  const base = ITEMS[name];
+  const uid = 'eq_' + Math.random().toString(36).substr(2, 9);
+  let item = { uid, name, enchant: 0 };
+  
+  const reqLv = base.reqLv || 1;
+  const type = base.type; // weapon, shirt, ring, etc.
+  
+  // 1. สุ่มระดับความแรร์ (Rarity)
+  let r = Math.random() * 100;
+  let rarityIdx = 0; 
+  if (r < 0.5) rarityIdx = 5;      // Mythic
+  else if (r < 3.0) rarityIdx = 4; // Legendary
+  else if (r < 10.0) rarityIdx = 3;// Epic
+  else if (r < 25.0) rarityIdx = 2;// Rare
+  else if (r < 55.0) rarityIdx = 1;// Uncommon
+  else rarityIdx = 0;              // Common
+
+  const rarityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
+  const rarityColors = ['#c8d0e8', '#4be878', '#4b8ce8', '#9b59e8', '#ffaa00', '#ff3333']; 
+  const statMultipliers = [1.0, 1.1, 1.25, 1.5, 2.0, 3.0]; 
+  const optionCounts = [0, 1, 2, 3, 4, 5]; 
+
+  item.rarityTier = rarityNames[rarityIdx];
+  item.color = rarityColors[rarityIdx];
+
+  // 2. คำนวณสเตตัสพื้นฐานอัตโนมัติ ตาม Type และ ReqLv
+  let baseAtk = 0, baseDef = 0, baseHp = 0;
+  
+  if (type === 'weapon') {
+     // อาวุธเน้น ATK เป็นหลัก
+     baseAtk = (reqLv * 8) + Math.floor(Math.random() * 10) + 10; 
+  } else if (['shirt', 'pants', 'hat', 'shoes'].includes(type)) {
+     // ชุดเกราะเน้น DEF และ HP
+     baseDef = (reqLv * 3) + Math.floor(Math.random() * 5) + 5;
+     baseHp = (reqLv * 15) + Math.floor(Math.random() * 20) + 20;
+  } else if (['ring', 'necklace', 'bracelet', 'earring'].includes(type)) {
+     // เครื่องประดับได้สเตตัสผสมเล็กน้อย
+     baseAtk = (reqLv * 2) + Math.floor(Math.random() * 5);
+     baseDef = (reqLv * 1) + Math.floor(Math.random() * 3);
+     baseHp = (reqLv * 5) + Math.floor(Math.random() * 10);
+  }
+
+  // นำสเตตัสที่คำนวณได้ไปคูณกับความแรร์ (พร้อมแถมความแกว่ง Variance 15%)
+  if (baseAtk > 0) item.atk = Math.floor((baseAtk + Math.floor(baseAtk * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
+  if (baseDef > 0) item.def = Math.floor((baseDef + Math.floor(baseDef * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
+  if (baseHp > 0) item.hp = Math.floor((baseHp + Math.floor(baseHp * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
+
+  // 3. สุ่มออฟชั่นแฝง
+  const possibleOptions = ['str','int','dex','vit','crit','dodge'];
+  let optionsGiven = optionCounts[rarityIdx];
+  
+  for(let i=0; i<optionsGiven; i++) {
+     const opt = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
+     let bonusVal = Math.floor((Math.random() * (reqLv / 2) + 1) * statMultipliers[rarityIdx]); 
+     if (opt === 'crit' || opt === 'dodge') {
+         bonusVal = Math.floor(Math.random() * 2) + 1 + (rarityIdx >= 4 ? 1 : 0); 
+     }
+     item[opt] = (item[opt] || 0) + bonusVal;
+  }
+  
+  return item;
+}
+
 function checkDeathState() {
   const btn = document.getElementById('btn-potion-revive');
   if (G.hp <= 0) {
-    btn.textContent = '✨ เกิดใหม่';
+    btn.textContent = '✨ ลุกขึ้นสู้';
     btn.className = 'btn btn-success';
     btn.onclick = revive;
   } else {
-    btn.innerHTML = '🧪 ใช้ยา HP';
+    btn.innerHTML = '♨️ ปั๊ม HP';
     btn.className = 'btn btn-danger';
-    btn.onclick = () => usePotion(false);
+    btn.onclick = () => usePotion('hp', false);
   }
 }
 
 function revive() {
   if (G.hp > 0) return;
-  G.hp = G.maxHp;
-  log(`<span style="color:var(--green)">✨ คุณเกิดใหม่แล้ว! พร้อมลุยต่อ</span>`);
+  G.hp = G.maxHp; G.mp = G.maxMp;
+  log(`<span style="color:var(--green)">✨ คุณฟื้นตัวแล้ว! พร้อมลุยต่อ</span>`);
   checkDeathState();
   renderBars();
   saveLocal();
 }
 
-function usePotion(isAuto = false) {
-  if (G.hp <= 0) return; // ตายอยู่ห้ามกดยา
-  const potions = ['ยาฟื้นฟูกลาง', 'ยาฟื้นฟูเล็ก'];
-  for (const p of potions) {
+function usePotion(type, isAuto = false) {
+  if (G.hp <= 0) return;
+  
+  let potList = [];
+  if(type === 'hp') potList = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'potion_hp');
+  if(type === 'mp') potList = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'potion_mp');
+  
+  for (const p of potList) {
     if (G.inventory[p] > 0) {
       const heal = ITEMS[p].heal;
-      G.hp = Math.min(G.maxHp, G.hp + heal);
+      if (type === 'hp') {
+        G.hp = Math.min(G.maxHp, G.hp + heal);
+        log(`<span style="color:#70e890">♨️ ใช้ ${p} ฟื้นฟู HP +${heal}</span>`);
+      } else {
+        G.mp = Math.min(G.maxMp, G.mp + heal);
+        log(`<span style="color:var(--cyan)">💧 ใช้ ${p} ฟื้นฟู MP +${heal}</span>`);
+      }
+      
       G.inventory[p]--; if(G.inventory[p] <= 0) delete G.inventory[p];
-      log(`<span style="color:#70e890">💊 ใช้ ${p} ฟื้นฟู HP +${heal}</span>`);
       renderBars(); renderInventory(); saveLocal();
       return true;
     }
   }
-  if (!isAuto) showNotif('ไม่มียาในกระเป๋า!', 'notif-die');
+  if (!isAuto) showNotif(`ไม่มียา ${type.toUpperCase()} ในกระเป๋า!`, 'notif-die');
   return false;
 }
 
-function useItem(name) {
-  if (G.hp <= 0) { showNotif('คุณตายอยู่ ทำสิ่งนี้ไม่ได้', 'notif-die'); return; }
-  if (!G.inventory[name]) return;
-  const it = ITEMS[name];
+function useItem(id, isEq = false) {
+  if (G.hp <= 0) { showNotif('น็อคอยู่ ทำสิ่งนี้ไม่ได้', 'notif-die'); return; }
   
-  if (it.type === 'potion') {
-    usePotion(); // เรียกใช้ระบบหลัก
-  } 
-  else if (EQUIP_SLOTS.includes(it.type)) {
+  if (isEq) {
+    const eq = G.inventoryEq[id];
+    if (!eq) return;
+    const it = ITEMS[eq.name];
     if (it.reqLv > G.level) { showNotif(`ต้องการ Lv.${it.reqLv}`, 'notif-die'); return; }
     if (it.reqClass && it.reqClass !== G.cls) { showNotif(`เฉพาะอาชีพ ${CLASS_DATA[it.reqClass].name}`, 'notif-die'); return; }
     
-    const old = G.equipment[it.type];
-    if (old === name) {
-      G.equipment[it.type] = null; // ถอด
-    } else {
-      if (old) { G.inventory[old] = (G.inventory[old]||0) + 1; }
-      G.equipment[it.type] = name;
-      G.inventory[name]--; if (G.inventory[name] <= 0) delete G.inventory[name];
-      G.enchants[it.type] = 0; 
-    }
+    G.equipment[it.type] = id;
+  } else {
+    if (ITEMS[id].type === 'potion_hp') usePotion('hp');
+    if (ITEMS[id].type === 'potion_mp') usePotion('mp');
   }
   calcDerivedStats(); renderAll(); saveLocal();
 }
 
-function promptSell(name) {
-  const it = ITEMS[name];
-  if (!it || !G.inventory[name]) return;
+function unequipSlot(slot) {
+  if (G.hp <= 0) return;
+  if (G.equipment[slot]) {
+    G.equipment[slot] = null;
+    calcDerivedStats(); renderAll(); saveLocal();
+  }
+}
+
+function promptSell(val, isEq) {
+  let nameToDisplay, sellPrice;
+  
+  if (isEq) {
+    const eq = G.inventoryEq[val];
+    if (!eq) return;
+    const it = ITEMS[eq.name];
+    nameToDisplay = eq.name + (eq.enchant > 0 ? ` +${eq.enchant}` : '');
+    sellPrice = it.sell + (eq.enchant * 50);
+  } else {
+    if (!G.inventory[val]) return;
+    nameToDisplay = val;
+    sellPrice = ITEMS[val].sell;
+  }
+
   const modal = document.getElementById('action-modal');
-  document.getElementById('action-modal-text').innerHTML = `ต้องการขาย<br><span style="color:var(--gold); font-size:16px;">${it.icon} ${name}</span><br>ในราคา 💰${it.sell} G หรือไม่?`;
+  document.getElementById('action-modal-text').innerHTML = `ต้องการขายทิ้ง<br><span style="color:var(--gold); font-size:16px;">${nameToDisplay}</span><br>ในราคา 💰${sellPrice} G หรือไม่?`;
   
   document.getElementById('action-modal-btn').onclick = function() {
-    if(G.inventory[name] > 0) {
-      G.gold += it.sell;
-      G.inventory[name]--;
-      if(G.inventory[name] <= 0) delete G.inventory[name];
-      log(`<span style="color:var(--gold)">ขาย ${name} ได้เงิน +${it.sell} G</span>`);
-      renderAll(); saveLocal();
+    if (isEq) {
+       G.gold += sellPrice;
+       delete G.inventoryEq[val];
+       log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`);
+    } else {
+       if(G.inventory[val] > 0) {
+         G.gold += sellPrice;
+         G.inventory[val]--;
+         if(G.inventory[val] <= 0) delete G.inventory[val];
+         log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`);
+       }
     }
+    renderAll(); saveLocal();
     modal.style.display = 'none';
   };
   modal.style.display = 'flex';
 }
 
-function enchantItem(slot) {
+function enchantItem(uid) {
   if (G.hp <= 0) return;
-  const item = G.equipment[slot];
-  if (!item) return;
-  const curlv = G.enchants[slot] || 0;
-  if (curlv >= 15) { showNotif('บวกสูงสุดแล้ว (+15)', 'notif-lvlup'); return; }
+  const eq = G.inventoryEq[uid];
+  if (!eq) return;
+  const curlv = eq.enchant || 0;
+  if (curlv >= 15) { showNotif('อัปเกรดสูงสุดแล้ว (+15)', 'notif-lvlup'); return; }
   
   const cost = (curlv + 1) * 200;
   const successRate = Math.max(10, 100 - (curlv * 6)); 
   
-  if (G.gold < cost) { showNotif('เงินไม่พอ', 'notif-die'); return; }
+  if (G.gold < cost) { showNotif('เงินไม่พอตีบวก', 'notif-die'); return; }
   
   G.gold -= cost;
   if (Math.random() * 100 <= successRate) {
-    G.enchants[slot] = curlv + 1;
+    eq.enchant = curlv + 1;
     showNotif(`ตีบวกสำเร็จ! เป็น +${curlv+1}`, 'notif-equip');
-    log(`<span style="color:var(--cyan)">🔨 อัปเกรด ${item} เป็น +${curlv+1} สำเร็จ!</span>`);
+    log(`<span style="color:var(--cyan)">🔨 ตีบวก ${eq.name} เป็น +${curlv+1} สำเร็จ!</span>`);
   } else {
-    G.equipment[slot] = null;
-    G.enchants[slot] = 0;
-    showNotif(`💥 อุปกรณ์แตกสลาย!`, 'notif-die');
-    log(`<span style="color:var(--red)">💥 ตีบวก ${item} ล้มเหลว อุปกรณ์พังทลาย!</span>`);
+    const it = ITEMS[eq.name];
+    if (G.equipment[it.type] === uid) G.equipment[it.type] = null;
+    delete G.inventoryEq[uid]; 
+    showNotif(`💥 ไอเทมแหก!`, 'notif-die');
+    log(`<span style="color:var(--red)">💥 ตีบวก ${eq.name} ล้มเหลว อุปกรณ์พังทลาย!</span>`);
   }
   calcDerivedStats(); renderAll(); saveLocal();
 }
 
 function buyItem(name, price) {
   if (G.gold < price) return showNotif('เงินไม่พอ', 'notif-die');
-  G.gold -= price; G.inventory[name] = (G.inventory[name]||0) + 1;
+  G.gold -= price; 
+  if (EQUIP_SLOTS.includes(ITEMS[name].type)) {
+     const newEq = createEquip(name);
+     G.inventoryEq[newEq.uid] = newEq;
+  } else {
+     G.inventory[name] = (G.inventory[name]||0) + 1;
+  }
   renderAll(); saveLocal();
 }
 
@@ -770,8 +1032,11 @@ function renderAll() {
 
 function renderBars() {
   document.getElementById('hp-bar').style.width = (G.hp / G.maxHp * 100) + '%';
+  document.getElementById('mp-bar').style.width = (G.mp / G.maxMp * 100) + '%';
   document.getElementById('exp-bar').style.width = (G.exp / G.expNext * 100) + '%';
+  
   document.getElementById('hp-text').textContent = `${G.hp}/${G.maxHp}`;
+  document.getElementById('mp-text').textContent = `${G.mp}/${G.maxMp}`;
   document.getElementById('exp-text').textContent = `${G.exp}/${G.expNext}`;
 }
 
@@ -785,7 +1050,6 @@ function renderStats() {
   document.getElementById('s-atk').textContent = G.atk; 
   document.getElementById('s-def').textContent = G.def;
   
-  // อัปเดตคริและหลบหลีก
   if(document.getElementById('s-crit')) document.getElementById('s-crit').textContent = G.crit;
   if(document.getElementById('s-dodge')) document.getElementById('s-dodge').textContent = G.dodge;
   
@@ -798,12 +1062,44 @@ function renderStats() {
   }
 }
 
+function buildStatString(eq, slotType, formatText = false) {
+  const elv = eq.enchant || 0;
+  const multi = 1 + (elv * 0.20);
+  const flatAtk = elv > 0 ? (elv * elv * 2) : 0;
+  const flatDef = elv > 0 ? (elv * elv * 1.5) : 0;
+  const flatHp  = elv > 0 ? (elv * 50) : 0;
+
+  let bAtk = Math.floor((eq.atk||0) * multi) + flatAtk;
+  let bDef = Math.floor((eq.def||0) * multi) + Math.floor(flatDef);
+  let bHp = Math.floor((eq.hp||0) * multi) + flatHp;
+  let bCrit = (eq.crit||0) + (slotType === 'weapon' ? elv * 1 : 0);
+  let bDodge = (eq.dodge||0) + ((slotType === 'shoes' || slotType === 'pants') ? elv * 1.5 : 0);
+
+  let s = [];
+  if(bAtk) s.push(`ATK:+${bAtk}`);
+  if(bDef) s.push(`DEF:+${bDef}`);
+  if(bHp) s.push(`HP:+${bHp}`);
+  if(eq.str) s.push(`STR:+${Math.floor(eq.str*multi)}`);
+  if(eq.int) s.push(`INT:+${Math.floor(eq.int*multi)}`);
+  if(eq.dex) s.push(`DEX:+${Math.floor(eq.dex*multi)}`);
+  if(eq.vit) s.push(`VIT:+${Math.floor(eq.vit*multi)}`);
+  if(bCrit) s.push(`CRI:+${bCrit}%`);
+  if(bDodge) s.push(`FLEE:+${bDodge}%`);
+  
+  if(formatText) return s.join('\n');
+  return s.map(x => `<span>${x}</span>`).join('');
+}
+
 function renderEquip() {
   EQUIP_SLOTS.forEach(slot => {
     const el = document.getElementById('eq-'+slot);
-    if (G.equipment[slot]) {
-      const itName = G.equipment[slot];
-      const elv = G.enchants[slot] || 0;
+    const parent = el.parentElement;
+    const uid = G.equipment[slot];
+    
+    if (uid && G.inventoryEq[uid]) {
+      const eq = G.inventoryEq[uid];
+      const itName = eq.name;
+      const elv = eq.enchant || 0;
       let auraClass = '';
       if (elv >= 4 && elv <= 6) auraClass = 'enchant-low';
       else if (elv >= 7 && elv <= 9) auraClass = 'enchant-mid';
@@ -811,47 +1107,86 @@ function renderEquip() {
       else if (elv >= 15) auraClass = 'enchant-max';
 
       const elvText = elv > 0 ? `<span class="enchant-lvl"> +${elv}</span>` : '';
-      el.innerHTML = `${ITEMS[itName].icon} ${itName}${elvText}`;
+      const statStr = buildStatString(eq, slot, true);
+      
+      el.innerHTML = `${getIconHtml(ITEMS[itName].icon, 20)} <span style="color:${eq.color || 'inherit'};">${itName}</span>${elvText}`;
       el.className = `equip-slot-val equipped ${auraClass}`;
+      
+      parent.className = 'equip-slot slot-unequip';
+      parent.title = `สวมใส่อยู่\nคลิกเพื่อถอด\n\n[สเตตัสรวมตีบวก]\n${statStr}`;
+      parent.onclick = () => unequipSlot(slot);
+      parent.style.cursor = 'pointer';
     } else {
-      el.textContent = '-'; el.className = 'equip-slot-val';
+      el.textContent = '-'; 
+      el.className = 'equip-slot-val';
+      parent.className = 'equip-slot';
+      parent.title = '';
+      parent.onclick = null;
+      parent.style.cursor = 'default';
     }
   });
 }
 
 function renderInventory() {
   const list = document.getElementById('inventory-list');
-  const entries = Object.entries(G.inventory).filter(([,q]) => q > 0);
-  if (entries.length === 0) return list.innerHTML = '<div style="color:var(--text3);text-align:center;">กระเป๋าว่างเปล่า</div>';
+  const equippedUids = Object.values(G.equipment).filter(uid => uid);
+  const bagEqs = Object.values(G.inventoryEq).filter(eq => !equippedUids.includes(eq.uid));
+  const normalItems = Object.entries(G.inventory).filter(([,q]) => q > 0);
   
-  list.innerHTML = entries.map(([name, qty]) => {
-    const it = ITEMS[name];
-    const isEq = EQUIP_SLOTS.includes(it.type);
+  if (bagEqs.length === 0 && normalItems.length === 0) {
+    return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ล็อกเกอร์ว่างเปล่า</div>';
+  }
+  
+  let html = '';
+  
+  bagEqs.forEach(eq => {
+    const it = ITEMS[eq.name];
     let reqText = '';
     if (it.reqLv) reqText += `Lv.${it.reqLv} `;
-    if (it.reqClass) reqText += `[${CLASS_DATA[it.reqClass].name}]`;
+    if (it.reqClass && CLASS_DATA[it.reqClass]) reqText += `[${CLASS_DATA[it.reqClass].name.split(' ')[0]}]`;
     
-    return `<div class="item-row">
-      <input type="checkbox" class="item-check sell-checkbox" value="${name}">
-      <div class="item-icon">${it.icon}</div>
+    const statsHtml = buildStatString(eq, it.type);
+    const elvText = eq.enchant > 0 ? `<span class="enchant-lvl"> +${eq.enchant}</span>` : '';
+
+    html += `<div class="item-row">
+      <input type="checkbox" class="item-check sell-checkbox" value="${eq.uid}">
+      <div class="item-icon">${getIconHtml(it.icon, 20)}</div>
       <div class="item-info">
-        <div class="item-name rarity-${it.rarity}">${name}</div>
+        <div class="item-name" style="color:${eq.color || 'var(--white)'}; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${eq.name}${elvText} <span style="font-size:8px; font-weight:normal;">[${eq.rarityTier}]</span></div>
         <div class="item-req">${reqText}</div>
+        <div class="item-stats">${statsHtml}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm" onclick="useItem('${eq.uid}', true)">ใส่</button>
+        <button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${eq.uid}', true)">ขายทิ้ง</button>
+      </div>
+    </div>`;
+  });
+
+  normalItems.forEach(([name, qty]) => {
+    const it = ITEMS[name];
+    html += `<div class="item-row">
+      <input type="checkbox" class="item-check sell-checkbox" value="${name}">
+      <div class="item-icon">${getIconHtml(it.icon, 20)}</div>
+      <div class="item-info">
+        <div class="item-name">${name}</div>
+        <div class="item-sub">${it.desc || ''}</div>
       </div>
       <div class="item-actions">
         <span class="item-qty">x${qty}</span>
         <div style="display:flex; gap:4px;">
-          ${isEq ? `<button class="btn-sm" onclick="useItem('${name}')">ใส่/ถอด</button>` : `<button class="btn-sm" onclick="useItem('${name}')">ใช้</button>`}
-          <button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${name}')">ขาย</button>
+          <button class="btn-sm" onclick="useItem('${name}', false)">ใช้</button>
+          <button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${name}', false)">ขายทิ้ง</button>
         </div>
       </div>
     </div>`;
-  }).join('');
+  });
+  
+  list.innerHTML = html;
   document.getElementById('gold-display').textContent = G.gold.toLocaleString();
   if(document.getElementById('check-all')) document.getElementById('check-all').checked = false;
 }
 
-// ฟังก์ชันใหม่สำหรับการขายไอเทมที่เลือก (Bulk Sell)
 function toggleAllCheckboxes(source) {
   const checkboxes = document.querySelectorAll('.sell-checkbox');
   checkboxes.forEach(cb => cb.checked = source.checked);
@@ -862,23 +1197,29 @@ function sellSelectedItems() {
   if (checkboxes.length === 0) return showNotif('ไม่ได้เลือกไอเทมที่จะขาย', 'notif-die');
   
   let totalGold = 0;
-  let soldItems = [];
 
   checkboxes.forEach(cb => {
-    const name = cb.value;
-    const qty = G.inventory[name];
-    const it = ITEMS[name];
-    if (qty > 0 && it) {
-      const earn = it.sell * qty;
-      totalGold += earn;
-      soldItems.push(`${name} x${qty}`);
-      delete G.inventory[name]; // ขายทิ้งทั้งหมดของประเภทนั้น
+    const val = cb.value;
+    if (val.startsWith('eq_')) { 
+      const eq = G.inventoryEq[val];
+      if (eq) {
+        const it = ITEMS[eq.name];
+        totalGold += (it.sell + (eq.enchant * 50));
+        delete G.inventoryEq[val];
+      }
+    } else { 
+      const qty = G.inventory[val];
+      const it = ITEMS[val];
+      if (qty > 0 && it) {
+        totalGold += it.sell * qty;
+        delete G.inventory[val];
+      }
     }
   });
 
   if (totalGold > 0) {
     G.gold += totalGold;
-    log(`<span style="color:var(--gold)">💰 ขยะถูกเคลียร์! ได้รับ +${totalGold.toLocaleString()} G</span>`);
+    log(`<span style="color:var(--gold)">💰 เคลียร์ขยะสถาบัน! ได้รับ +${totalGold.toLocaleString()} G</span>`);
     showNotif(`ขายได้ ${totalGold.toLocaleString()} G`, 'notif-lvlup');
     renderAll();
     saveLocal();
@@ -887,21 +1228,22 @@ function sellSelectedItems() {
 
 function renderEnchant() {
   const list = document.getElementById('enchant-list');
-  const eqItems = EQUIP_SLOTS.filter(s => G.equipment[s]);
-  if (eqItems.length === 0) return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ยังไม่ได้สวมใส่อุปกรณ์ใดๆ</div>';
+  const eqUids = Object.values(G.equipment).filter(uid => uid);
+  if (eqUids.length === 0) return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ยังไม่ได้สวมใส่อุปกรณ์ใดๆ</div>';
   
-  list.innerHTML = eqItems.map(slot => {
-    const name = G.equipment[slot];
-    const curlv = G.enchants[slot] || 0;
-    if (curlv >= 15) return `<div class="item-row"><div class="item-info"><span style="color:var(--gold)">${ITEMS[name].icon} ${name} +15 (MAX)</span></div></div>`;
+  list.innerHTML = eqUids.map(uid => {
+    const eq = G.inventoryEq[uid];
+    const name = eq.name;
+    const curlv = eq.enchant || 0;
+    if (curlv >= 15) return `<div class="item-row"><div class="item-info"><span style="color:var(--gold)">${getIconHtml(ITEMS[name].icon, 20)} ${name} +15 (MAX)</span></div></div>`;
     
     const cost = (curlv + 1) * 200;
     const rate = Math.max(10, 100 - (curlv * 6));
     
-    return `<div class="item-row" onclick="enchantItem('${slot}')" style="border-color:var(--gold2); cursor:pointer;">
-      <div class="item-icon">${ITEMS[name].icon}</div>
+    return `<div class="item-row" onclick="enchantItem('${uid}')" style="border-color:var(--gold2); cursor:pointer;">
+      <div class="item-icon">${getIconHtml(ITEMS[name].icon, 20)}</div>
       <div class="item-info">
-        <div class="item-name">${name} <span class="enchant-lvl">+${curlv} ➡ +${curlv+1}</span></div>
+        <div class="item-name" style="color:${eq.color || 'var(--white)'};">${name} <span class="enchant-lvl">+${curlv} ➡ +${curlv+1}</span></div>
         <div style="font-size:9px; color:var(--text2)">โอกาสสำเร็จ: ${rate}%</div>
       </div>
       <div class="item-qty" style="color:var(--gold)">💰${cost}</div>
@@ -910,17 +1252,21 @@ function renderEnchant() {
 }
 
 function buildShop() {
-  document.getElementById('shop-list').innerHTML = SHOP_ITEMS.map(s => `<div class="item-row" onclick="buyItem('${s.name}', ${s.price})" style="cursor:pointer;"><div class="item-icon">${ITEMS[s.name].icon}</div><div class="item-info"><div class="item-name">${s.name}</div></div><div class="item-qty" style="color:var(--gold)">💰${s.price}</div></div>`).join('');
+  document.getElementById('shop-list').innerHTML = SHOP_ITEMS.map(s => `<div class="item-row" onclick="buyItem('${s.name}', ${s.price})" style="cursor:pointer;"><div class="item-icon">${getIconHtml(ITEMS[s.name].icon, 20)}</div><div class="item-info"><div class="item-name">${s.name}</div></div><div class="item-qty" style="color:var(--gold)">💰${s.price}</div></div>`).join('');
 }
 
 function buildZoneTabs() {
   document.getElementById('zone-tabs').innerHTML = ZONES.map((z, idx) => {
     let locked = G.level < z.unlockLv;
+    
     if (idx > 0 && !locked) {
       const pZ = ZONES[idx-1];
-      if ((G.quests[pZ.id]||0) < pZ.reqBosses) locked = true;
+      if (z.unlockLv < 30 && pZ.reqBosses > 0 && (G.quests[pZ.id]||0) < pZ.reqBosses) {
+        locked = true;
+      }
     }
-    return `<div class="zone-tab${locked?' locked':(currentZone?.id===z.id?' active':'')}" data-id="${z.id}" onclick="${locked?'':`selectZone(ZONES.find(x=>x.id==='${z.id}'))`}">${locked?`🔒 Lv.${z.unlockLv}`:`${z.icon} ${z.name}`}</div>`;
+    
+    return `<div class="zone-tab${locked?' locked':(currentZone?.id===z.id?' active':'')}" data-id="${z.id}" onclick="${locked?'':`selectZone(ZONES.find(x=>x.id==='${z.id}'))`}">${locked?`🔒 Lv.${z.unlockLv}`:`${getIconHtml(z.icon, 12)} ${z.name}`}</div>`;
   }).join('');
 }
 
@@ -931,14 +1277,8 @@ function switchInvTab(t) {
   document.getElementById('inv-shop').style.display = t === 'shop' ? 'block' : 'none';
 }
 
-function log(html) { const el = document.getElementById('battle-log'); const div = document.createElement('div'); div.innerHTML = html; el.appendChild(div); while(el.children.length > 50) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; }
+function log(html) { const el = document.getElementById('battle-log'); const div = document.createElement('div'); div.innerHTML = html; el.appendChild(div); while(el.children.length > 150) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; }
 function showNotif(msg, cls) { const c = document.getElementById('notif-container'); const div = document.createElement('div'); div.className = 'notif ' + cls; div.textContent = msg; c.appendChild(div); setTimeout(() => div.remove(), 2500); }
-
-// ══════════════════════════════════════════════
-//  CLOUD SAVE
-// ══════════════════════════════════════════════
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwekTQoFAU2TSsHbrL5cfBkRj02DOK05vDlX3O3whz-OdbUCSFx2mqCuPrUvlFLnJ4Sw/exec'; 
-let currentUser = '', currentPass = '', cloudTimer = null;
 
 function saveLocal() { if (G) localStorage.setItem('ran_idle_save', JSON.stringify({ G })); }
 function startAutoSaveSystem() { if(cloudTimer) clearInterval(cloudTimer); cloudTimer = setInterval(silentSave, 60000); }
@@ -950,7 +1290,7 @@ window.addEventListener('beforeunload', () => { if (G && currentUser) silentSave
 
 async function doLogin() {
   const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
-  if (!u || !p) return alert("กรุณาใส่ Username/Password");
+  if (!u || !p) return alert("กรุณาใส่รหัสนักเรียน/รหัสผ่าน");
   currentUser = u; currentPass = p;
   document.getElementById('btn-login').textContent = 'กำลังตรวจสอบ...';
   
@@ -964,26 +1304,26 @@ async function doLogin() {
         document.getElementById('title-screen').style.display = 'flex';
       } else {
         G = json.data.G;
-        if (!G.enchants) G.enchants = {}; if (!G.quests) G.quests = {};
-        EQUIP_SLOTS.forEach(s => { if(G.enchants[s]===undefined) G.enchants[s]=0; if(G.equipment[s]===undefined) G.equipment[s]=null; });
+        migrateSaveData(); 
+        if (!G.quests) G.quests = {};
         calcDerivedStats(); document.getElementById('char-icon').textContent = CLASS_DATA[G.cls].icon;
         document.getElementById('game-screen').style.display = 'flex';
         buildZoneTabs(); buildShop(); checkQuest(); renderAll(); startAutoSaveSystem();
       }
-    } else { alert("Error: " + json.message); document.getElementById('btn-login').textContent = 'เริ่มเล่นเกม'; }
-  } catch(e) { alert("เชื่อมต่อล้มเหลว"); document.getElementById('btn-login').textContent = 'เริ่มเล่นเกม'; }
+    } else { alert("Error: " + json.message); document.getElementById('btn-login').textContent = 'เข้าสู่สถาบัน'; }
+  } catch(e) { alert("เชื่อมต่อสถาบันล้มเหลว"); document.getElementById('btn-login').textContent = 'เข้าสู่สถาบัน'; }
 }
 
 async function manualSaveToCloud() {
-  if (!G) return; showNotif('กำลังบันทึก...', 'notif-equip'); saveLocal();
+  if (!G) return; showNotif('กำลังซิงค์ข้อมูล...', 'notif-equip'); saveLocal();
   try {
     const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: 'save', username: currentUser, password: currentPass, data: { G } }) });
     const json = await res.json();
-    if (json.success) showNotif('บันทึก Cloud สำเร็จ!', 'notif-lvlup'); else alert(json.message);
+    if (json.success) showNotif('บันทึกเซฟสถาบันสำเร็จ!', 'notif-lvlup'); else alert(json.message);
   } catch(e) { alert('เชื่อมต่อล้มเหลว เซฟลงเครื่องแล้ว'); }
 }
 
-function resetGame() { if(confirm('รีเซ็ตลบตัวละครนี้ถาวร?')) { localStorage.clear(); location.reload(); } }
+function resetGame() { if(confirm('ต้องการลาออกจากสถาบัน (ลบตัวละครถาวร)?')) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
