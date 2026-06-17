@@ -154,6 +154,72 @@
   .item-stats { font-size: 9px; color: var(--gold2); display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .item-stats span { background: var(--bg1); padding: 2px 4px; border-radius: 2px; border: 1px solid var(--border); }
   .slot-unequip:hover { border-color: var(--red) !important; background: rgba(232,75,75,0.1) !important; }
+  /* 📱 ── Mobile Responsive (อัปเกรดให้รองรับหน้าจอมือถือ) ── */
+  @media (max-width: 800px) {
+    body { overflow-x: hidden; }
+    
+    /* ปรับหน้าสร้างตัวละครให้เรียงลงมา */
+    .title-logo { font-size: 36px; }
+    .class-grid { grid-template-columns: 1fr; width: 100%; padding: 0 10px; }
+    
+    /* ปลดล็อกความสูง ให้หน้าจอเลื่อนขึ้น-ลงได้ */
+    #game-screen { height: auto; min-height: 100vh; }
+    .main-layout { 
+      display: flex; 
+      flex-direction: column; 
+      overflow-y: auto; 
+    }
+    
+    /* 📌 ลำดับที่ 1: โซนต่อสู้ (อยู่บนสุดของมือถือ) */
+    .main-layout > .middle-panel { 
+      order: 1; 
+      border-right: none; 
+      border-bottom: 6px solid var(--bg0); 
+      background: var(--bg1);
+      display: flex; 
+      flex-direction: column; 
+    }
+    
+    /* 📌 ลำดับที่ 2: สเตตัสและอุปกรณ์ (อยู่ตรงกลาง) */
+    .main-layout > .panel:nth-child(1) { 
+      order: 2; 
+      border-right: none; 
+      border-bottom: 6px solid var(--bg0); 
+    }
+    
+    /* 📌 ลำดับที่ 3: กระเป๋าไอเทม/ตีบวก/ร้านค้า (อยู่ล่างสุด) */
+    .main-layout > .panel:nth-child(3) { 
+      order: 3; 
+      border-left: none; 
+    }
+    
+    /* ให้กรอบขยายความสูงตามเนื้อหาไอเทมที่มี */
+    .panel, .middle-panel { width: 100%; flex: auto; min-height: 350px; }
+    .panel-body { overflow-y: visible; padding-bottom: 20px; }
+    
+    /* จัดบาร์ด้านบนใหม่ให้สมมาตร */
+    .topbar { flex-wrap: wrap; justify-content: center; gap: 8px; padding: 10px; }
+    .topbar-info { flex-basis: 100%; justify-content: center; text-align: center; }
+    
+    /* ปรับปุ่มกดต่อสู้ให้ใหญ่ขึ้น กดง่ายขึ้นด้วยนิ้ว */
+    .btn-row { flex-wrap: wrap; }
+    .btn-row .btn { flex: 1; min-width: 30%; padding: 12px 5px; font-size: 12px; }
+    
+    /* ปรับตั้งค่า Auto Potion ให้ไม่บีบกันเกินไป */
+    .auto-pot-box { flex-direction: column; align-items: stretch; gap: 6px; }
+    .auto-pot-item { justify-content: center; gap: 10px; }
+    
+    /* ย้ายกล่องแจ้งเตือน (Notifications) ให้อยู่ตรงกลางจอบน */
+    #notif-container { 
+      top: 20px; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      right: auto; 
+      align-items: center; 
+      width: 90%; 
+    }
+    .notif { width: 100%; text-align: center; font-size: 13px; padding: 10px; }
+  }
 </style>
 </head>
 <body>
