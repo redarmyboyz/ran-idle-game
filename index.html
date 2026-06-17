@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAN Idle RPG Portect OUR Campus</title>
+<title>RAN Idle RPG - SG Campus</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
@@ -67,6 +67,11 @@
   .char-name { text-align: center; font-size: 13px; font-weight: 700; color: var(--white); }
   .char-class { text-align: center; font-size: 10px; color: var(--text2); margin-bottom: 8px; }
   
+  .buff-bar { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 18px; margin-bottom: 8px; }
+  .buff-icon { font-size: 9px; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; font-weight: bold; border: 1px solid; }
+  .buff-icon.atk { background: rgba(232,75,75,0.15); color: var(--red); border-color: var(--red2); }
+  .buff-icon.def { background: rgba(75,232,120,0.15); color: var(--green); border-color: var(--green2); }
+
   .bar-row { margin-bottom: 4px; }
   .bar-label { display: flex; justify-content: space-between; font-size: 9px; color: var(--text2); margin-bottom: 2px; }
   .bar-track { height: 6px; background: var(--bg3); border-radius: 3px; border: 1px solid var(--border); overflow: hidden; }
@@ -107,7 +112,18 @@
   .monster-hp-fill { height: 100%; background: linear-gradient(90deg, #a83030, #e84b4b); transition: width .1s; }
   
   .battle-controls { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-  .btn-row { display: flex; gap: 6px; justify-content: center; }
+  
+  /* ── Skill Bar (New) ── */
+  .skill-bar { display: flex; gap: 12px; justify-content: center; margin-bottom: 6px; }
+  .skill-slot-ui { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 44px; }
+  .skill-btn { position: relative; width: 40px; height: 40px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; overflow: hidden; transition: 0.2s; }
+  .skill-btn:hover { border-color: var(--gold); }
+  .skill-btn.empty { background: var(--bg1); border: 1px dashed var(--border); cursor: default; }
+  .skill-btn.empty:hover { border-color: var(--border); }
+  .skill-cd-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-family: monospace; font-weight: bold; }
+  .skill-auto { font-size: 9px; color: var(--text2); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+  .btn-row { display: flex; gap: 6px; justify-content: center; width: 100%; }
   .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid; font-size: 11px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; font-weight: 500; }
   .btn-primary { background: rgba(232,184,75,0.15); border-color: var(--gold2); color: var(--gold); }
   .btn-danger { background: rgba(232,75,75,0.1); border-color: var(--red2); color: var(--red); }
@@ -118,7 +134,7 @@
   .auto-pot-item { display: flex; align-items: center; gap: 4px; }
   .auto-pot-input { width: 30px; background: var(--bg1); border: 1px solid var(--border); color: var(--text); text-align: center; border-radius: 2px; }
 
-  .chat-container { display: flex; flex-direction: column; height: 140px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .chat-container { display: flex; flex-direction: column; height: 120px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .battle-log { flex: 1; overflow-y: auto; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 11px; line-height: 1.5; }
   .battle-log::-webkit-scrollbar { width: 4px; } .battle-log::-webkit-scrollbar-thumb { background: var(--border2); }
   
@@ -154,70 +170,26 @@
   .item-stats { font-size: 9px; color: var(--gold2); display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .item-stats span { background: var(--bg1); padding: 2px 4px; border-radius: 2px; border: 1px solid var(--border); }
   .slot-unequip:hover { border-color: var(--red) !important; background: rgba(232,75,75,0.1) !important; }
-  /* 📱 ── Mobile Responsive (อัปเกรดให้รองรับหน้าจอมือถือ) ── */
+
+  /* 📱 ── Mobile Responsive ── */
   @media (max-width: 800px) {
     body { overflow-x: hidden; }
-    
-    /* ปรับหน้าสร้างตัวละครให้เรียงลงมา */
     .title-logo { font-size: 36px; }
     .class-grid { grid-template-columns: 1fr; width: 100%; padding: 0 10px; }
-    
-    /* ปลดล็อกความสูง ให้หน้าจอเลื่อนขึ้น-ลงได้ */
     #game-screen { height: auto; min-height: 100vh; }
-    .main-layout { 
-      display: flex; 
-      flex-direction: column; 
-      overflow-y: auto; 
-    }
-    
-    /* 📌 ลำดับที่ 1: โซนต่อสู้ (อยู่บนสุดของมือถือ) */
-    .main-layout > .middle-panel { 
-      order: 1; 
-      border-right: none; 
-      border-bottom: 6px solid var(--bg0); 
-      background: var(--bg1);
-      display: flex; 
-      flex-direction: column; 
-    }
-    
-    /* 📌 ลำดับที่ 2: สเตตัสและอุปกรณ์ (อยู่ตรงกลาง) */
-    .main-layout > .panel:nth-child(1) { 
-      order: 2; 
-      border-right: none; 
-      border-bottom: 6px solid var(--bg0); 
-    }
-    
-    /* 📌 ลำดับที่ 3: กระเป๋าไอเทม/ตีบวก/ร้านค้า (อยู่ล่างสุด) */
-    .main-layout > .panel:nth-child(3) { 
-      order: 3; 
-      border-left: none; 
-    }
-    
-    /* ให้กรอบขยายความสูงตามเนื้อหาไอเทมที่มี */
+    .main-layout { display: flex; flex-direction: column; overflow-y: auto; }
+    .main-layout > .middle-panel { order: 1; border-right: none; border-bottom: 6px solid var(--bg0); background: var(--bg1); display: flex; flex-direction: column; }
+    .main-layout > .panel:nth-child(1) { order: 2; border-right: none; border-bottom: 6px solid var(--bg0); }
+    .main-layout > .panel:nth-child(3) { order: 3; border-left: none; }
     .panel, .middle-panel { width: 100%; flex: auto; min-height: 350px; }
     .panel-body { overflow-y: visible; padding-bottom: 20px; }
-    
-    /* จัดบาร์ด้านบนใหม่ให้สมมาตร */
     .topbar { flex-wrap: wrap; justify-content: center; gap: 8px; padding: 10px; }
     .topbar-info { flex-basis: 100%; justify-content: center; text-align: center; }
-    
-    /* ปรับปุ่มกดต่อสู้ให้ใหญ่ขึ้น กดง่ายขึ้นด้วยนิ้ว */
     .btn-row { flex-wrap: wrap; }
     .btn-row .btn { flex: 1; min-width: 30%; padding: 12px 5px; font-size: 12px; }
-    
-    /* ปรับตั้งค่า Auto Potion ให้ไม่บีบกันเกินไป */
     .auto-pot-box { flex-direction: column; align-items: stretch; gap: 6px; }
     .auto-pot-item { justify-content: center; gap: 10px; }
-    
-    /* ย้ายกล่องแจ้งเตือน (Notifications) ให้อยู่ตรงกลางจอบน */
-    #notif-container { 
-      top: 20px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      right: auto; 
-      align-items: center; 
-      width: 90%; 
-    }
+    #notif-container { top: 20px; left: 50%; transform: translateX(-50%); right: auto; align-items: center; width: 90%; }
     .notif { width: 100%; text-align: center; font-size: 13px; padding: 10px; }
   }
 </style>
@@ -263,7 +235,7 @@
 
 <div id="game-screen">
   <div class="topbar">
-    <div class="topbar-logo">RAN Idle</div>
+    <div class="topbar-logo">RAN SG</div>
     <div class="topbar-info">
       <div class="topbar-stat">Lv <span id="tb-lv">1</span></div>
       <div class="topbar-stat">💰 <span id="tb-gold">0</span></div>
@@ -282,6 +254,8 @@
         <div class="char-name" id="char-name">ผู้กล้า SG</div>
         <div class="char-class" id="char-class">Class · Lv 1</div>
         
+        <div class="buff-bar" id="buff-bar"></div>
+
         <div class="bar-row"><div class="bar-label"><span>HP</span><span id="hp-text">100/100</span></div><div class="bar-track"><div class="bar-fill bar-hp" id="hp-bar" style="width:100%"></div></div></div>
         <div class="bar-row"><div class="bar-label"><span>MP</span><span id="mp-text">50/50</span></div><div class="bar-track"><div class="bar-fill bar-mp" id="mp-bar" style="width:100%"></div></div></div>
         <div class="bar-row"><div class="bar-label"><span>EXP</span><span id="exp-text">0/100</span></div><div class="bar-track"><div class="bar-fill bar-exp" id="exp-bar" style="width:0%"></div></div></div>
@@ -340,6 +314,8 @@
         </div>
 
         <div class="battle-controls">
+          <div class="skill-bar" id="skill-bar"></div>
+
           <div class="btn-row">
             <button class="btn btn-primary" id="btn-battle" onclick="toggleBattle()" style="width:120px;">▶ เริ่ม Auto Bot</button>
             <button class="btn btn-danger" id="btn-potion-revive" onclick="usePotion('hp')">♨️ ปั๊ม HP</button>
@@ -369,6 +345,7 @@
       <div class="inv-tabs">
         <div class="inv-tab active" onclick="switchInvTab('items')">🎒 ล็อกเกอร์</div>
         <div class="inv-tab" onclick="switchInvTab('enchant')">🔨 ตีบวก</div>
+        <div class="inv-tab" onclick="switchInvTab('skills')">🔥 สกิล</div>
         <div class="inv-tab" onclick="switchInvTab('shop')">🏪 สหกรณ์</div>
       </div>
       
@@ -386,6 +363,11 @@
         <div id="enchant-list"></div>
       </div>
 
+      <div id="inv-skills" class="panel-body" style="display:none;">
+        <div style="margin-bottom:10px; font-size:10px; color:var(--text2);">ปลดล็อกสกิลด้วยเลเวลและชำระค่าเรียน (Lv x 1,000G)</div>
+        <div id="skill-list"></div>
+      </div>
+
       <div id="inv-shop" class="panel-body" style="display:none;">
         <div id="shop-list"></div>
       </div>
@@ -396,17 +378,14 @@
 <div id="notif-container"></div>
 
 <script>
-// ⬇️⬇️⬇️ URL การเชื่อมต่อฐานข้อมูล Google Apps Script ⬇️⬇️⬇️
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgbzJ7ZOeN_u2Wv-OFiayO4TiKLDBDaJ2mBw1Ic24attUSE8jiofOhyWkQK6TRhnErEA/exec'; 
+// ⬇️⬇️⬇️ นำ URL ใหม่มาใส่ที่นี่ ⬇️⬇️⬇️
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRTdFTsDdML3aNGkkI3JNkUU3TDkZFEtxYEoX5vD9jh4FKHUYDmueb7fSghLs2sZ4V4g/exec'; 
 
-// ══════════════════════════════════════════════
-//  SYSTEM VARIABLES & DYNAMIC DATA
-// ══════════════════════════════════════════════
 const CLASS_DATA = {
-  sword: { name: 'สายดาบ (Sword)', icon: '⚔️', base: { str:10, int:2, dex:4, vit:8 }, auto: ['str','str','str','vit','vit'], skill: { name: 'ดาบผ่าอากาศ', cost: 10, multi: 2.2 } },
-  spear: { name: 'สายหมัด (Brawler)', icon: '🥊', base: { str:8, int:2, dex:8, vit:6 }, auto: ['dex','dex','str','str','vit'], skill: { name: 'หมัดระเบิดพสุธา', cost: 8, multi: 2.0 } },
-  bow:   { name: 'สายธนู (Archer)',   icon: '🎯', base: { str:4, int:2, dex:12, vit:4 }, auto: ['dex','dex','dex','dex','str'], skill: { name: 'ศรทะลวงวิญญาณ', cost: 12, multi: 2.5 } },
-  magic: { name: 'สายเวท (Shaman)',   icon: '🔮', base: { str:2, int:12, dex:4, vit:4 }, auto: ['int','int','int','int','vit'], skill: { name: 'ลูกไฟบรรลัยกัลป์', cost: 18, multi: 3.5 } }, 
+  sword: { name: 'สายดาบ (Sword)', icon: '⚔️', base: { str:10, int:2, dex:4, vit:8 }, auto: ['str','str','str','vit','vit'] },
+  spear: { name: 'สายหมัด (Brawler)', icon: '🥊', base: { str:8, int:2, dex:8, vit:6 }, auto: ['dex','dex','str','str','vit'] },
+  bow:   { name: 'สายธนู (Archer)',   icon: '🎯', base: { str:4, int:2, dex:12, vit:4 }, auto: ['dex','dex','dex','dex','str'] },
+  magic: { name: 'สายเวท (Shaman)',   icon: '🔮', base: { str:2, int:12, dex:4, vit:4 }, auto: ['int','int','int','int','vit'] }, 
 };
 
 const EQUIP_SLOTS = ['hat','shirt','pants','shoes','weapon','ring','necklace','bracelet','earring'];
@@ -414,6 +393,7 @@ const EQUIP_SLOTS = ['hat','shirt','pants','shoes','weapon','ring','necklace','b
 let ITEMS = {};
 let ZONES = [];
 let MONSTERS = [];
+let SKILLS = {}; // ข้อมูลสกิลจากเซิร์ฟเวอร์
 let SHOP_ITEMS = [];
 
 let G = null; 
@@ -424,6 +404,11 @@ let currentMon = null;
 let monHp = 0;
 let battleRunning = false;
 let currentUser = '', currentPass = '', cloudTimer = null;
+
+// ระบบสกิลและบัพ
+let skillCooldowns = {}; 
+let activeBuffs = { atk: 0, def: 0 }; 
+let buffMultipliers = { atk: 1, def: 1 }; 
 
 function getIconHtml(iconData, size = 60) {
   if (!iconData) return '';
@@ -438,14 +423,10 @@ function getIconHtml(iconData, size = 60) {
   return iconData;
 }
 
-// ══════════════════════════════════════════════
-//  DATABASE FETCHING & PARSING
-// ══════════════════════════════════════════════
 window.onload = async () => {
   try {
     const res = await fetch(WEB_APP_URL, {
-      method: 'POST',
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: 'fetch_db' })
     });
     const json = await res.json();
@@ -465,8 +446,7 @@ window.onload = async () => {
          return {
             name: m.Name, icon: m.Icon, level: parseInt(m.Level)||1,
             hpMulti: parseFloat(m.HpMulti)||10, atkMulti: parseFloat(m.AtkMulti)||2,
-            defMulti: parseFloat(m.DefMulti)||1, expMulti: parseFloat(m.ExpMulti)||5,
-            gb: parseFloat(m.GoldBase)||2
+            defMulti: parseFloat(m.DefMulti)||1, expMulti: parseFloat(m.ExpMulti)||5, gb: parseFloat(m.GoldBase)||2
          };
       });
 
@@ -474,33 +454,35 @@ window.onload = async () => {
          let dropArr = [];
          if (z.DropItems) {
             z.DropItems.split(',').forEach(d => {
-               let parts = d.split(':');
-               if(parts.length === 2) dropArr.push({ rule: parts[0].trim(), rate: parseFloat(parts[1].trim()) });
+               let parts = d.split(':'); if(parts.length === 2) dropArr.push({ rule: parts[0].trim(), rate: parseFloat(parts[1].trim()) });
             });
          }
-         return {
-            id: z.ZoneID, name: z.Name, icon: z.Icon, 
-            unlockLv: parseInt(z.UnlockLv)||1, maxLv: parseInt(z.MaxLv)||10,
-            reqBosses: parseInt(z.ReqBosses)||0, nextZone: z.NextZone, drop: dropArr
-         };
+         return { id: z.ZoneID, name: z.Name, icon: z.Icon, unlockLv: parseInt(z.UnlockLv)||1, maxLv: parseInt(z.MaxLv)||10, reqBosses: parseInt(z.ReqBosses)||0, nextZone: z.NextZone, drop: dropArr };
       });
+
+      if (json.data.skills) {
+          json.data.skills.forEach(sk => {
+              SKILLS[sk.SkillID] = {
+                  name: sk.Name, icon: sk.Icon, reqClass: sk.ReqClass, reqLv: parseInt(sk.ReqLv),
+                  type: sk.Type, mp: parseInt(sk.MP), power: parseFloat(sk.Power),
+                  duration: parseInt(sk.Duration), cooldown: parseInt(sk.Cooldown), desc: sk.Desc
+              };
+          });
+      }
 
       document.getElementById('loading-screen').style.display = 'none';
       document.getElementById('login-screen').style.display = 'flex';
-      
     } else { alert("ไม่สามารถโหลด Database ได้"); }
   } catch(e) { alert("การเชื่อมต่อล้มเหลว ตรวจสอบ URL หรือ Internet"); }
 };
 
-// ══════════════════════════════════════════════
-//  INIT & MIGRATION
-// ══════════════════════════════════════════════
 function startGame(cls) {
   const cd = CLASS_DATA[cls];
   G = {
     cls, level: 1, exp: 0, expNext: 100, gold: 100, statPts: 0,
     str: cd.base.str, int: cd.base.int, dex: cd.base.dex, vit: cd.base.vit,
-    hp: 0, maxHp: 0, mp: 0, maxMp: 0, inventory: {}, inventoryEq: {}, equipment: {}, quests: {}
+    hp: 0, maxHp: 0, mp: 0, maxMp: 0, inventory: {}, inventoryEq: {}, equipment: {}, quests: {},
+    skills: [], equipSkills: [null, null, null], autoSkills: [false, false, false]
   };
   EQUIP_SLOTS.forEach(s => G.equipment[s] = null);
   ZONES.forEach(z => G.quests[z.id] = 0);
@@ -517,6 +499,9 @@ function migrateSaveData() {
   if (!G) return;
   if (!G.inventoryEq) G.inventoryEq = {};
   if (G.mp === undefined) G.mp = 0;
+  if (!G.skills) G.skills = [];
+  if (!G.equipSkills) G.equipSkills = [null, null, null];
+  if (!G.autoSkills) G.autoSkills = [false, false, false];
   
   EQUIP_SLOTS.forEach(slot => {
     const name = G.equipment[slot];
@@ -543,16 +528,17 @@ function migrateSaveData() {
   });
 }
 
+// ══════════════════════════════════════════════
+//  STATS CALCULATION
+// ══════════════════════════════════════════════
 function calcDerivedStats() {
-  let bAtk = 0, bDef = 0, bStr = 0, bInt = 0, bDex = 0, bVit = 0, bHp = 0;
-  let bCrit = 0, bDodge = 0; 
+  let bAtk = 0, bDef = 0, bStr = 0, bInt = 0, bDex = 0, bVit = 0, bHp = 0, bCrit = 0, bDodge = 0; 
   
   EQUIP_SLOTS.forEach(slot => {
     const uid = G.equipment[slot];
     if (uid && G.inventoryEq[uid]) {
       const eq = G.inventoryEq[uid];
       const elv = eq.enchant || 0;
-      
       const multi = 1 + (elv * 0.20); 
       const flatAtk = elv > 0 ? (elv * elv * 2) : 0; 
       const flatDef = elv > 0 ? (elv * elv * 1.5) : 0;
@@ -565,7 +551,6 @@ function calcDerivedStats() {
       bDex += Math.floor((eq.dex||0) * multi);
       bVit += Math.floor((eq.vit||0) * multi);
       bHp  += Math.floor((eq.hp||0) * multi) + flatHp;
-
       bCrit += (eq.crit||0) + (slot === 'weapon' ? elv * 1 : 0);
       bDodge += (eq.dodge||0) + ((slot === 'shoes' || slot === 'pants') ? elv * 1.5 : 0);
     }
@@ -592,258 +577,208 @@ function calcDerivedStats() {
   if(G.mp > G.maxMp) G.mp = G.maxMp;
 }
 
-function allocTemp(s) {
-  if (G.statPts - tempStats.pts > 0 && G.hp > 0) { tempStats[s]++; tempStats.pts++; calcDerivedStats(); renderStats(); }
-}
-function confirmStats() {
-  if (tempStats.pts <= 0) return;
-  G.str += tempStats.str; G.int += tempStats.int; G.dex += tempStats.dex; G.vit += tempStats.vit;
-  G.statPts -= tempStats.pts;
-  tempStats = {str:0, int:0, dex:0, vit:0, pts:0};
-  calcDerivedStats(); renderAll(); saveLocal(); showNotif('อัปเดตสเตตัสเรียบร้อย', 'notif-lvlup');
-}
-function cancelStats() {
-  tempStats = {str:0, int:0, dex:0, vit:0, pts:0}; calcDerivedStats(); renderStats();
-}
-function autoStats() {
-  const pts = G.statPts - tempStats.pts;
-  if (pts <= 0 || G.hp <= 0) return;
-  const order = CLASS_DATA[G.cls].auto;
-  let added = 0;
-  while (added < pts) {
-    const s = order[added % order.length];
-    tempStats[s]++; tempStats.pts++; added++;
-  }
-  calcDerivedStats(); renderStats();
+function getCurrentAtk() { return activeBuffs.atk > Date.now() ? Math.floor(G.atk * buffMultipliers.atk) : G.atk; }
+function getCurrentDef() { return activeBuffs.def > Date.now() ? Math.floor(G.def * buffMultipliers.def) : G.def; }
+
+function allocTemp(s) { if (G.statPts - tempStats.pts > 0 && G.hp > 0) { tempStats[s]++; tempStats.pts++; calcDerivedStats(); renderStats(); } }
+function confirmStats() { if (tempStats.pts <= 0) return; G.str += tempStats.str; G.int += tempStats.int; G.dex += tempStats.dex; G.vit += tempStats.vit; G.statPts -= tempStats.pts; tempStats = {str:0, int:0, dex:0, vit:0, pts:0}; calcDerivedStats(); renderAll(); saveLocal(); showNotif('อัปเดตสเตตัสเรียบร้อย', 'notif-lvlup'); }
+function cancelStats() { tempStats = {str:0, int:0, dex:0, vit:0, pts:0}; calcDerivedStats(); renderStats(); }
+function autoStats() { const pts = G.statPts - tempStats.pts; if (pts <= 0 || G.hp <= 0) return; const order = CLASS_DATA[G.cls].auto; let added = 0; while (added < pts) { const s = order[added % order.length]; tempStats[s]++; tempStats.pts++; added++; } calcDerivedStats(); renderStats(); }
+
+// ══════════════════════════════════════════════
+//  SKILL SYSTEM (NEW)
+// ══════════════════════════════════════════════
+function learnSkill(id) {
+    const sk = SKILLS[id];
+    const cost = sk.reqLv * 1000;
+    if (G.gold < cost) return showNotif('ทองไม่พอเรียนสกิล!', 'notif-die');
+    G.gold -= cost;
+    G.skills.push(id);
+    log(`<span style="color:var(--green)">🎓 เรียนสกิล [${sk.name}] สำเร็จ!</span>`);
+    renderAll(); saveLocal();
 }
 
-function checkQuest() {
-  if (!currentZone) return;
-  const qBar = document.getElementById('quest-display');
-  const kills = G.quests[currentZone.id] || 0;
-  const nextZ = ZONES.find(z => z.id === currentZone.nextZone);
-  const reqBosses = currentZone.reqBosses || 0;
-
-  if (nextZ) {
-    if (nextZ.unlockLv >= 30 || reqBosses <= 0) {
-      if (G.level >= nextZ.unlockLv) {
-        qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`;
-        qBar.style.color = 'var(--green)';
-      } else {
-        qBar.innerHTML = `⭐ เควส: ฟาร์มเลเวลให้ถึง Lv.${nextZ.unlockLv} เพื่อเข้าสู่ ${nextZ.name}`;
-        qBar.style.color = 'var(--cyan)';
-      }
+function toggleEquipSkill(id) {
+    const idx = G.equipSkills.indexOf(id);
+    if (idx > -1) {
+        G.equipSkills[idx] = null; // ถอดสกิล
+        G.autoSkills[idx] = false;
     } else {
-      if (kills >= reqBosses) {
-        if (G.level >= nextZ.unlockLv) {
-           qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`;
-           qBar.style.color = 'var(--green)';
+        const emptyIdx = G.equipSkills.indexOf(null);
+        if (emptyIdx > -1) {
+            G.equipSkills[emptyIdx] = id; // ติดตั้งในช่องว่าง
         } else {
-           qBar.innerHTML = `⭐ เคลียร์บอสแล้ว! ฟาร์มเลเวลต่อให้ถึง Lv.${nextZ.unlockLv} เพื่อไปโซนถัดไป`;
-           qBar.style.color = 'var(--cyan)';
+            return showNotif('ช่องสกิลเต็ม! ต้องถอดอันเก่าก่อน', 'notif-die');
         }
-      } else {
-        qBar.innerHTML = `⚔️ เควส: กำจัด 👑 [BOSS] ใน ${currentZone.name} (${kills}/${reqBosses})`;
-        qBar.style.color = 'var(--cyan)';
-      }
     }
-  } else {
-    if (reqBosses > 0) {
-      if (kills >= reqBosses) {
-        qBar.innerHTML = `✅ สำเร็จภารกิจกำจัดบอส! 🚩 พื้นที่ฟาร์มอิสระ`;
-        qBar.style.color = 'var(--green)';
-      } else {
-        qBar.innerHTML = `⚔️ เควสประจำโซน: กำจัด 👑 [BOSS] (${kills}/${reqBosses})`;
-        qBar.style.color = 'var(--cyan)';
-      }
+    renderAll(); saveLocal();
+}
+
+function toggleAutoSkill(idx) {
+    G.autoSkills[idx] = !G.autoSkills[idx];
+    saveLocal();
+}
+
+function manualCastSkill(slotIdx) {
+    if (G.hp <= 0 || !currentMon) return;
+    const id = G.equipSkills[slotIdx];
+    if (!id) return;
+    castSkill(id);
+}
+
+function castSkill(id) {
+    const sk = SKILLS[id];
+    const now = Date.now();
+    if (skillCooldowns[id] && skillCooldowns[id] > now) return showNotif('สกิลกำลังคูลดาวน์', 'notif-die');
+    if (G.mp < sk.mp) return showNotif('MP ไม่พอ', 'notif-die');
+    
+    G.mp -= sk.mp;
+    skillCooldowns[id] = now + (sk.cooldown * 1000);
+    
+    if (sk.type === 'damage') {
+        const isCrit = Math.random() * 100 <= (G.crit || 0);
+        let dmg = Math.max(1, getCurrentAtk() - currentMon.def + Math.floor(Math.random() * (getCurrentAtk() * 0.2)));
+        dmg = Math.floor(dmg * sk.power);
+        if (isCrit) dmg = Math.floor(dmg * 1.5);
+        
+        log(`<span class="log-skill">✨ ใช้สกิล [${sk.name}]! ทำดาเมจ -${dmg.toLocaleString()}</span>`);
+        applyDamageToMonster(dmg);
+    } else if (sk.type === 'buff_atk') {
+        activeBuffs.atk = now + (sk.duration * 1000);
+        buffMultipliers.atk = sk.power;
+        log(`<span class="log-skill">🔥 บัพ [${sk.name}]! พลังโจมตีเพิ่มขึ้น</span>`);
+    } else if (sk.type === 'buff_def') {
+        activeBuffs.def = now + (sk.duration * 1000);
+        buffMultipliers.def = sk.power;
+        log(`<span class="log-skill">🛡️ บัพ [${sk.name}]! พลังป้องกันเพิ่มขึ้น</span>`);
+    }
+    
+    renderBars(); renderSkillSlots(); renderBuffs();
+}
+
+setInterval(() => {
+    if (!G) return;
+    renderSkillSlots();
+    renderBuffs();
+}, 1000); // อัปเดตทุก 1 วินาทีสำหรับหน้าจอสกิลและบัพ
+
+function renderBuffs() {
+    const bar = document.getElementById('buff-bar');
+    let html = '';
+    const now = Date.now();
+    if (activeBuffs.atk > now) {
+        let sec = Math.ceil((activeBuffs.atk - now) / 1000);
+        html += `<div class="buff-icon atk">🔥 ATK UP (${sec}s)</div>`;
+    }
+    if (activeBuffs.def > now) {
+        let sec = Math.ceil((activeBuffs.def - now) / 1000);
+        html += `<div class="buff-icon def">🛡️ DEF UP (${sec}s)</div>`;
+    }
+    bar.innerHTML = html;
+    
+    document.getElementById('s-atk').textContent = getCurrentAtk();
+    document.getElementById('s-def').textContent = getCurrentDef();
+}
+
+// ══════════════════════════════════════════════
+//  BATTLE & QUESTS
+// ══════════════════════════════════════════════
+function applyDamageToMonster(dmg) {
+    monHp = Math.max(0, monHp - dmg);
+    if (monHp <= 0) {
+        const expGain = currentMon.exp;
+        const goldGain = currentMon.gold[0] + Math.floor(Math.random() * (currentMon.gold[1] - currentMon.gold[0] + 1));
+        G.exp += expGain; G.gold += goldGain;
+        G.mp = Math.min(G.maxMp, G.mp + Math.floor(G.maxMp * 0.05)); 
+        
+        if (currentMon.isBoss) {
+          G.quests[currentZone.id] = (G.quests[currentZone.id] || 0) + 1;
+          log(`<span style="color:#ff5555;font-weight:bold;">🔥 ชนะ BOSS! EXP +${expGain} | Gold +${goldGain}</span>`);
+          checkQuest();
+        } else { log(`<span class="log-kill">✨ ชนะ! EXP +${expGain} | Gold +${goldGain}</span>`); }
+
+        if (currentZone.drop && currentZone.drop.length > 0) {
+          currentZone.drop.forEach(d => {
+            if (Math.random() < d.rate) {
+              let itemName = null;
+              if (d.rule === 'auto_equip') {
+                const minLv = Math.max(1, currentZone.maxLv - 15); 
+                const possible = Object.keys(ITEMS).filter(k => EQUIP_SLOTS.includes(ITEMS[k].type) && ITEMS[k].reqLv >= minLv && ITEMS[k].reqLv <= currentZone.maxLv);
+                if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
+              } 
+              else if (d.rule === 'auto_potion') {
+                const possible = Object.keys(ITEMS).filter(k => ITEMS[k].type.startsWith('potion'));
+                if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
+              } else { itemName = d.rule; }
+
+              if (itemName && ITEMS[itemName]) {
+                if (EQUIP_SLOTS.includes(ITEMS[itemName].type)) {
+                   const newEq = createEquip(itemName);
+                   G.inventoryEq[newEq.uid] = newEq;
+                   log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} <span style="color:${newEq.color}; font-weight:bold;">[${newEq.rarityTier}] ${itemName}</span></span>`);
+                } else {
+                   G.inventory[itemName] = (G.inventory[itemName] || 0) + 1;
+                   log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} ${itemName}</span>`);
+                }
+              }
+            }
+          });
+        }
+
+        while (G.exp >= G.expNext) {
+          G.exp -= G.expNext; G.level++; G.statPts += 5;
+          G.expNext = Math.floor(100 * Math.pow(1.2, G.level - 1));
+          calcDerivedStats(); G.hp = G.maxHp; G.mp = G.maxMp;
+          log(`<span class="log-lvlup">★ LEVEL UP! → Lv ${G.level} ★</span>`);
+          showNotif(`Level Up! Lv.${G.level}`, 'notif-lvlup');
+          buildZoneTabs();
+        }
+        spawnMonster(); renderAll(); saveLocal(); 
     } else {
-      qBar.innerHTML = `🚩 พื้นที่ฟาร์มอิสระ: ล่ามอนสเตอร์และตามหาไอเทมระดับตำนาน!`;
-      qBar.style.color = 'var(--gold)';
+        document.getElementById('mon-hp-bar').style.width = (monHp / currentMon.hp * 100) + '%';
+        document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
     }
-  }
-  buildZoneTabs();
-}
-
-function selectZone(zone) {
-  if (G.level < zone.unlockLv) { showNotif(`ต้องการ Lv ${zone.unlockLv}`, 'notif-die'); return; }
-  const zIdx = ZONES.findIndex(z => z.id === zone.id);
-  
-  if (zIdx > 0 && zone.unlockLv < 30) {
-    const prevZ = ZONES[zIdx-1];
-    if (prevZ.reqBosses > 0 && (G.quests[prevZ.id]||0) < prevZ.reqBosses) {
-      showNotif(`ทำเควสบอส ${prevZ.name} ก่อน`, 'notif-die'); return;
-    }
-  }
-  
-  currentZone = zone; spawnMonster(); checkQuest();
-  
-  document.getElementById('zone-name-display').innerHTML = getIconHtml(zone.icon, 16) + ' ' + zone.name;
-  document.querySelectorAll('.zone-tab').forEach(t => t.classList.toggle('active', t.dataset.id === zone.id));
-  log(`<span style="color:var(--purple)">── เข้าสู่ ${zone.name} ──</span>`);
-}
-
-function spawnMonster() {
-  if (!currentZone || !MONSTERS || MONSTERS.length === 0) return;
-  
-  let targetLv = Math.min(G.level, currentZone.maxLv);
-  let availableMons = MONSTERS.filter(m => m.level >= targetLv - 5 && m.level <= targetLv + 5);
-  
-  if (availableMons.length === 0) {
-     let higherMons = MONSTERS.filter(m => m.level > targetLv + 5).sort((a,b) => a.level - b.level);
-     if (higherMons.length > 0) availableMons = [higherMons[0]];
-     else {
-         let allMonsSorted = [...MONSTERS].sort((a,b) => b.level - a.level);
-         availableMons = [allMonsSorted[0]];
-     }
-  }
-
-  const isBoss = Math.random() < 0.1; 
-  const baseM = availableMons[Math.floor(Math.random() * availableMons.length)];
-  
-  let hp = Math.floor(targetLv * baseM.hpMulti);
-  let atk = Math.floor(targetLv * baseM.atkMulti);
-  let def = Math.floor(targetLv * baseM.defMulti);
-  let exp = Math.floor(targetLv * baseM.expMulti);
-  let goldArr = [Math.floor(targetLv * baseM.gb), Math.floor(targetLv * baseM.gb * 1.5)];
-
-  if (isBoss) {
-    hp *= 5; atk *= 2; def *= 2; exp *= 5;
-    goldArr = [goldArr[0]*5, goldArr[1]*5];
-  }
-
-  currentMon = {
-     name: (isBoss ? "👑 [BOSS] " : "") + baseM.name,
-     icon: baseM.icon,
-     isBoss: isBoss,
-     level: targetLv,
-     hp: hp, atk: atk, def: def, exp: exp, gold: goldArr
-  };
-  monHp = currentMon.hp;
-  
-  const mNameEl = document.getElementById('mon-name');
-  mNameEl.textContent = `Lv.${currentMon.level} ${currentMon.name}`;
-  if (isBoss) mNameEl.classList.add('boss'); else mNameEl.classList.remove('boss');
-  
-  document.getElementById('mon-icon').innerHTML = getIconHtml(currentMon.icon, 60);
-  
-  document.getElementById('mon-hp-bar').style.width = '100%';
-  document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
-}
-
-function toggleBattle() {
-  if (!currentZone) return;
-  if (G.hp <= 0) { showNotif('ต้องเกิดใหม่ก่อน!', 'notif-die'); return; }
-  battleRunning = !battleRunning;
-  const btn = document.getElementById('btn-battle');
-  if (battleRunning) { btn.textContent = '⏸ หยุด Auto'; doBattle(); battleTimer = setInterval(doBattle, 1500); }
-  else { btn.textContent = '▶ เริ่ม Auto Bot'; clearInterval(battleTimer); }
 }
 
 function doBattle() {
   if (!currentMon || G.hp <= 0) return;
+  const now = Date.now();
+  let skillCast = false;
   
-  const skillInfo = CLASS_DATA[G.cls].skill;
-  let useSkill = false;
-  
-  if (G.mp >= skillInfo.cost && Math.random() < 0.25) {
-     useSkill = true;
-     G.mp -= skillInfo.cost;
-  }
-  
-  const isCrit = Math.random() * 100 <= (G.crit || 0);
-  let dmg = Math.max(1, G.atk - currentMon.def + Math.floor(Math.random() * (G.atk * 0.2)));
-  
-  if (useSkill) {
-    dmg = Math.floor(dmg * skillInfo.multi);
-    if(isCrit) dmg = Math.floor(dmg * 1.5);
-    log(`<span class="log-skill">✨ ใช้สกิล [${skillInfo.name}]! ดาเมจ -${dmg.toLocaleString()}</span>`);
-  } else {
-    if (isCrit) {
-      dmg = Math.floor(dmg * 1.5); 
-      log(`<span class="log-dmg" style="color:#ffdd00; font-weight:bold;">⚡ คริติคอล! -${dmg.toLocaleString()}</span>`);
-    } else {
-      log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`);
-    }
-  }
-  
-  monHp = Math.max(0, monHp - dmg);
-
-  if (monHp <= 0) {
-    const expGain = currentMon.exp;
-    const goldMin = currentMon.gold[0] || 0;
-    const goldMax = currentMon.gold[1] || goldMin;
-    const goldGain = goldMin + Math.floor(Math.random() * (goldMax - goldMin + 1));
-    G.exp += expGain; G.gold += goldGain;
-    
-    G.mp = Math.min(G.maxMp, G.mp + Math.floor(G.maxMp * 0.05)); 
-    
-    if (currentMon.isBoss) {
-      G.quests[currentZone.id] = (G.quests[currentZone.id] || 0) + 1;
-      log(`<span style="color:#ff5555;font-weight:bold;">🔥 ชนะ BOSS! EXP +${expGain} | Gold +${goldGain}</span>`);
-      checkQuest();
-    } else {
-      log(`<span class="log-kill">✨ ชนะ! EXP +${expGain} | Gold +${goldGain}</span>`);
-    }
-
-    if (currentZone.drop && currentZone.drop.length > 0) {
-      currentZone.drop.forEach(d => {
-        if (Math.random() < d.rate) {
-          let itemName = null;
-          
-          if (d.rule === 'auto_equip') {
-            const maxLv = currentZone.maxLv;
-            const minLv = Math.max(1, maxLv - 15); 
-            
-            const possible = Object.keys(ITEMS).filter(k => {
-               const it = ITEMS[k];
-               return EQUIP_SLOTS.includes(it.type) && it.reqLv >= minLv && it.reqLv <= maxLv;
-            });
-            if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
-          } 
-          else if (d.rule === 'auto_potion') {
-            const possible = Object.keys(ITEMS).filter(k => ITEMS[k].type.startsWith('potion'));
-            if (possible.length > 0) itemName = possible[Math.floor(Math.random() * possible.length)];
-          } 
-          else {
-            itemName = d.rule; 
+  // ออโต้สกิล
+  for (let i = 0; i < 3; i++) {
+      if (G.autoSkills[i] && G.equipSkills[i]) {
+          const id = G.equipSkills[i];
+          if (G.mp >= SKILLS[id].mp && (!skillCooldowns[id] || skillCooldowns[id] <= now)) {
+              castSkill(id);
+              skillCast = true;
+              break; 
           }
-
-          if (itemName && ITEMS[itemName]) {
-            if (EQUIP_SLOTS.includes(ITEMS[itemName].type)) {
-               const newEq = createEquip(itemName);
-               G.inventoryEq[newEq.uid] = newEq;
-               log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} <span style="color:${newEq.color}; font-weight:bold;">[${newEq.rarityTier}] ${itemName}</span></span>`);
-            } else {
-               G.inventory[itemName] = (G.inventory[itemName] || 0) + 1;
-               log(`<span class="log-drop">💎 ได้รับ: ${getIconHtml(ITEMS[itemName].icon, 12)} ${itemName}</span>`);
-            }
-          }
-        }
-      });
-    }
-
-    while (G.exp >= G.expNext) {
-      G.exp -= G.expNext; G.level++; G.statPts += 5;
-      G.expNext = Math.floor(100 * Math.pow(1.2, G.level - 1));
-      calcDerivedStats(); G.hp = G.maxHp; G.mp = G.maxMp;
-      log(`<span class="log-lvlup">★ LEVEL UP! → Lv ${G.level} ★</span>`);
-      showNotif(`Level Up! Lv.${G.level}`, 'notif-lvlup');
-      buildZoneTabs();
-    }
-    spawnMonster(); renderAll(); saveLocal(); return;
+      }
   }
+  
+  // ถ้าเทิร์นนี้ใช้สกิลไปแล้ว จะไม่โจมตีธรรมดาซ้ำ
+  if (!skillCast) {
+      const isCrit = Math.random() * 100 <= (G.crit || 0);
+      let dmg = Math.max(1, getCurrentAtk() - currentMon.def + Math.floor(Math.random() * (getCurrentAtk() * 0.2)));
+      if (isCrit) {
+          dmg = Math.floor(dmg * 1.5); 
+          log(`<span class="log-dmg" style="color:#ffdd00; font-weight:bold;">⚡ คริติคอล! -${dmg.toLocaleString()}</span>`);
+      } else { log(`<span class="log-dmg">โจมตี: -${dmg.toLocaleString()} HP</span>`); }
+      applyDamageToMonster(dmg);
+  }
+  
+  if (monHp <= 0) return;
 
   const isDodge = Math.random() * 100 <= (G.dodge || 0);
   if (isDodge) {
     log(`<span style="color:var(--cyan);">💨 หลบหลีกสำเร็จ! (Miss)</span>`);
   } else {
-    const monDmg = Math.max(1, currentMon.atk - G.def + Math.floor(Math.random() * 5));
+    const monDmg = Math.max(1, currentMon.atk - getCurrentDef() + Math.floor(Math.random() * 5));
     G.hp = Math.max(0, G.hp - monDmg);
     
     if (G.hp <= 0) {
-      let expLoss = Math.floor(G.expNext * 0.05);
-      G.exp = Math.max(0, G.exp - expLoss);
-      
+      let expLoss = Math.floor(G.expNext * 0.05); G.exp = Math.max(0, G.exp - expLoss);
       log(`<span style="color:var(--red)">💀 คุณร่วงแล้ว! หัก EXP -${expLoss}</span>`);
       showNotif('💀 น็อคเอาท์!', 'notif-die');
       if (battleRunning) toggleBattle();
@@ -861,215 +796,187 @@ function doBattle() {
       if ((G.mp / G.maxMp * 100) <= mpPct) usePotion('mp', true); 
     }
   }
-  
-  document.getElementById('mon-hp-bar').style.width = (monHp / currentMon.hp * 100) + '%';
-  document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
-  checkDeathState();
-  renderBars();
+  checkDeathState(); renderBars();
 }
 
-// ══════════════════════════════════════════════
-//  ✅ AUTO-SCALING STATS & RNG SYSTEM
-// ══════════════════════════════════════════════
+function checkQuest() {
+  if (!currentZone) return;
+  const qBar = document.getElementById('quest-display');
+  const kills = G.quests[currentZone.id] || 0;
+  const nextZ = ZONES.find(z => z.id === currentZone.nextZone);
+  const reqBosses = currentZone.reqBosses || 0;
+
+  if (nextZ) {
+    if (nextZ.unlockLv >= 30 || reqBosses <= 0) {
+      if (G.level >= nextZ.unlockLv) { qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`; qBar.style.color = 'var(--green)'; } 
+      else { qBar.innerHTML = `⭐ เควส: ฟาร์มเลเวลให้ถึง Lv.${nextZ.unlockLv} เพื่อเข้าสู่ ${nextZ.name}`; qBar.style.color = 'var(--cyan)'; }
+    } else {
+      if (kills >= reqBosses) {
+        if (G.level >= nextZ.unlockLv) { qBar.innerHTML = `✅ ปลดล็อกโซน ${nextZ.name} แล้ว! ลุยได้เลย!`; qBar.style.color = 'var(--green)'; } 
+        else { qBar.innerHTML = `⭐ เคลียร์บอสแล้ว! ฟาร์มเลเวลต่อให้ถึง Lv.${nextZ.unlockLv} เพื่อไปโซนถัดไป`; qBar.style.color = 'var(--cyan)'; }
+      } else { qBar.innerHTML = `⚔️ เควส: กำจัด 👑 [BOSS] ใน ${currentZone.name} (${kills}/${reqBosses})`; qBar.style.color = 'var(--cyan)'; }
+    }
+  } else {
+    if (reqBosses > 0) {
+      if (kills >= reqBosses) { qBar.innerHTML = `✅ สำเร็จภารกิจกำจัดบอส! 🚩 พื้นที่ฟาร์มอิสระ`; qBar.style.color = 'var(--green)'; } 
+      else { qBar.innerHTML = `⚔️ เควสประจำโซน: กำจัด 👑 [BOSS] (${kills}/${reqBosses})`; qBar.style.color = 'var(--cyan)'; }
+    } else { qBar.innerHTML = `🚩 พื้นที่ฟาร์มอิสระ: ล่ามอนสเตอร์และตามหาไอเทมระดับตำนาน!`; qBar.style.color = 'var(--gold)'; }
+  }
+  buildZoneTabs();
+}
+
+function selectZone(zone) {
+  if (G.level < zone.unlockLv) { showNotif(`ต้องการ Lv ${zone.unlockLv}`, 'notif-die'); return; }
+  const zIdx = ZONES.findIndex(z => z.id === zone.id);
+  if (zIdx > 0 && zone.unlockLv < 30) {
+    const prevZ = ZONES[zIdx-1];
+    if (prevZ.reqBosses > 0 && (G.quests[prevZ.id]||0) < prevZ.reqBosses) { showNotif(`ทำเควสบอส ${prevZ.name} ก่อน`, 'notif-die'); return; }
+  }
+  currentZone = zone; spawnMonster(); checkQuest();
+  document.getElementById('zone-name-display').innerHTML = getIconHtml(zone.icon, 16) + ' ' + zone.name;
+  document.querySelectorAll('.zone-tab').forEach(t => t.classList.toggle('active', t.dataset.id === zone.id));
+  log(`<span style="color:var(--purple)">── เข้าสู่ ${zone.name} ──</span>`);
+}
+
+function spawnMonster() {
+  if (!currentZone || !MONSTERS || MONSTERS.length === 0) return;
+  let targetLv = Math.min(G.level, currentZone.maxLv);
+  let availableMons = MONSTERS.filter(m => m.level >= targetLv - 5 && m.level <= targetLv + 5);
+  if (availableMons.length === 0) {
+     let higherMons = MONSTERS.filter(m => m.level > targetLv + 5).sort((a,b) => a.level - b.level);
+     if (higherMons.length > 0) availableMons = [higherMons[0]];
+     else { let allMonsSorted = [...MONSTERS].sort((a,b) => b.level - a.level); availableMons = [allMonsSorted[0]]; }
+  }
+  const isBoss = Math.random() < 0.1; 
+  const baseM = availableMons[Math.floor(Math.random() * availableMons.length)];
+  let hp = Math.floor(targetLv * baseM.hpMulti), atk = Math.floor(targetLv * baseM.atkMulti);
+  let def = Math.floor(targetLv * baseM.defMulti), exp = Math.floor(targetLv * baseM.expMulti);
+  let goldArr = [Math.floor(targetLv * baseM.gb), Math.floor(targetLv * baseM.gb * 1.5)];
+  if (isBoss) { hp *= 5; atk *= 2; def *= 2; exp *= 5; goldArr = [goldArr[0]*5, goldArr[1]*5]; }
+  currentMon = { name: (isBoss ? "👑 [BOSS] " : "") + baseM.name, icon: baseM.icon, isBoss: isBoss, level: targetLv, hp, atk, def, exp, gold: goldArr };
+  monHp = currentMon.hp;
+  const mNameEl = document.getElementById('mon-name');
+  mNameEl.textContent = `Lv.${currentMon.level} ${currentMon.name}`;
+  if (isBoss) mNameEl.classList.add('boss'); else mNameEl.classList.remove('boss');
+  document.getElementById('mon-icon').innerHTML = getIconHtml(currentMon.icon, 60);
+  document.getElementById('mon-hp-bar').style.width = '100%'; document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
+}
+
+function toggleBattle() {
+  if (!currentZone) return;
+  if (G.hp <= 0) { showNotif('ต้องเกิดใหม่ก่อน!', 'notif-die'); return; }
+  battleRunning = !battleRunning;
+  const btn = document.getElementById('btn-battle');
+  if (battleRunning) { btn.textContent = '⏸ หยุด Auto'; doBattle(); battleTimer = setInterval(doBattle, 1500); }
+  else { btn.textContent = '▶ เริ่ม Auto Bot'; clearInterval(battleTimer); }
+}
+
 function createEquip(name) {
   const base = ITEMS[name];
   const uid = 'eq_' + Math.random().toString(36).substr(2, 9);
   let item = { uid, name, enchant: 0 };
+  const reqLv = base.reqLv || 1, type = base.type;
   
-  const reqLv = base.reqLv || 1;
-  const type = base.type; // weapon, shirt, ring, etc.
-  
-  // 1. สุ่มระดับความแรร์ (Rarity)
-  let r = Math.random() * 100;
-  let rarityIdx = 0; 
-  if (r < 0.5) rarityIdx = 5;      // Mythic
-  else if (r < 3.0) rarityIdx = 4; // Legendary
-  else if (r < 10.0) rarityIdx = 3;// Epic
-  else if (r < 25.0) rarityIdx = 2;// Rare
-  else if (r < 55.0) rarityIdx = 1;// Uncommon
-  else rarityIdx = 0;              // Common
+  let r = Math.random() * 100, rarityIdx = 0; 
+  if (r < 0.5) rarityIdx = 5; else if (r < 3.0) rarityIdx = 4; else if (r < 10.0) rarityIdx = 3; else if (r < 25.0) rarityIdx = 2; else if (r < 55.0) rarityIdx = 1; else rarityIdx = 0;              
+  const rarityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'], rarityColors = ['#c8d0e8', '#4be878', '#4b8ce8', '#9b59e8', '#ffaa00', '#ff3333'], statMultipliers = [1.0, 1.1, 1.25, 1.5, 2.0, 3.0], optionCounts = [0, 1, 2, 3, 4, 5]; 
+  item.rarityTier = rarityNames[rarityIdx]; item.color = rarityColors[rarityIdx];
 
-  const rarityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
-  const rarityColors = ['#c8d0e8', '#4be878', '#4b8ce8', '#9b59e8', '#ffaa00', '#ff3333']; 
-  const statMultipliers = [1.0, 1.1, 1.25, 1.5, 2.0, 3.0]; 
-  const optionCounts = [0, 1, 2, 3, 4, 5]; 
-
-  item.rarityTier = rarityNames[rarityIdx];
-  item.color = rarityColors[rarityIdx];
-
-  // 2. คำนวณสเตตัสพื้นฐานอัตโนมัติ ตาม Type และ ReqLv
   let baseAtk = 0, baseDef = 0, baseHp = 0;
-  
-  if (type === 'weapon') {
-     // อาวุธเน้น ATK เป็นหลัก
-     baseAtk = (reqLv * 8) + Math.floor(Math.random() * 10) + 10; 
-  } else if (['shirt', 'pants', 'hat', 'shoes'].includes(type)) {
-     // ชุดเกราะเน้น DEF และ HP
-     baseDef = (reqLv * 3) + Math.floor(Math.random() * 5) + 5;
-     baseHp = (reqLv * 15) + Math.floor(Math.random() * 20) + 20;
-  } else if (['ring', 'necklace', 'bracelet', 'earring'].includes(type)) {
-     // เครื่องประดับได้สเตตัสผสมเล็กน้อย
-     baseAtk = (reqLv * 2) + Math.floor(Math.random() * 5);
-     baseDef = (reqLv * 1) + Math.floor(Math.random() * 3);
-     baseHp = (reqLv * 5) + Math.floor(Math.random() * 10);
-  }
+  if (type === 'weapon') baseAtk = (reqLv * 8) + Math.floor(Math.random() * 10) + 10; 
+  else if (['shirt', 'pants', 'hat', 'shoes'].includes(type)) { baseDef = (reqLv * 3) + Math.floor(Math.random() * 5) + 5; baseHp = (reqLv * 15) + Math.floor(Math.random() * 20) + 20; } 
+  else if (['ring', 'necklace', 'bracelet', 'earring'].includes(type)) { baseAtk = (reqLv * 2) + Math.floor(Math.random() * 5); baseDef = (reqLv * 1) + Math.floor(Math.random() * 3); baseHp = (reqLv * 5) + Math.floor(Math.random() * 10); }
 
-  // นำสเตตัสที่คำนวณได้ไปคูณกับความแรร์ (พร้อมแถมความแกว่ง Variance 15%)
   if (baseAtk > 0) item.atk = Math.floor((baseAtk + Math.floor(baseAtk * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
   if (baseDef > 0) item.def = Math.floor((baseDef + Math.floor(baseDef * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
   if (baseHp > 0) item.hp = Math.floor((baseHp + Math.floor(baseHp * (Math.random() * 0.15))) * statMultipliers[rarityIdx]);
 
-  // 3. สุ่มออฟชั่นแฝง
   const possibleOptions = ['str','int','dex','vit','crit','dodge'];
-  let optionsGiven = optionCounts[rarityIdx];
-  
-  for(let i=0; i<optionsGiven; i++) {
+  for(let i=0; i<optionCounts[rarityIdx]; i++) {
      const opt = possibleOptions[Math.floor(Math.random() * possibleOptions.length)];
      let bonusVal = Math.floor((Math.random() * (reqLv / 2) + 1) * statMultipliers[rarityIdx]); 
-     if (opt === 'crit' || opt === 'dodge') {
-         bonusVal = Math.floor(Math.random() * 2) + 1 + (rarityIdx >= 4 ? 1 : 0); 
-     }
+     if (opt === 'crit' || opt === 'dodge') bonusVal = Math.floor(Math.random() * 2) + 1 + (rarityIdx >= 4 ? 1 : 0); 
      item[opt] = (item[opt] || 0) + bonusVal;
   }
-  
   return item;
 }
 
 function checkDeathState() {
   const btn = document.getElementById('btn-potion-revive');
-  if (G.hp <= 0) {
-    btn.textContent = '✨ ลุกขึ้นสู้';
-    btn.className = 'btn btn-success';
-    btn.onclick = revive;
-  } else {
-    btn.innerHTML = '♨️ ปั๊ม HP';
-    btn.className = 'btn btn-danger';
-    btn.onclick = () => usePotion('hp', false);
-  }
+  if (G.hp <= 0) { btn.textContent = '✨ ลุกขึ้นสู้'; btn.className = 'btn btn-success'; btn.onclick = revive; } 
+  else { btn.innerHTML = '♨️ ปั๊ม HP'; btn.className = 'btn btn-danger'; btn.onclick = () => usePotion('hp', false); }
 }
 
 function revive() {
   if (G.hp > 0) return;
   G.hp = G.maxHp; G.mp = G.maxMp;
   log(`<span style="color:var(--green)">✨ คุณฟื้นตัวแล้ว! พร้อมลุยต่อ</span>`);
-  checkDeathState();
-  renderBars();
-  saveLocal();
+  checkDeathState(); renderBars(); saveLocal();
 }
 
 function usePotion(type, isAuto = false) {
   if (G.hp <= 0) return;
-  
   let potList = [];
   if(type === 'hp') potList = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'potion_hp');
   if(type === 'mp') potList = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'potion_mp');
-  
   for (const p of potList) {
     if (G.inventory[p] > 0) {
       const heal = ITEMS[p].heal;
-      if (type === 'hp') {
-        G.hp = Math.min(G.maxHp, G.hp + heal);
-        log(`<span style="color:#70e890">♨️ ใช้ ${p} ฟื้นฟู HP +${heal}</span>`);
-      } else {
-        G.mp = Math.min(G.maxMp, G.mp + heal);
-        log(`<span style="color:var(--cyan)">💧 ใช้ ${p} ฟื้นฟู MP +${heal}</span>`);
-      }
-      
+      if (type === 'hp') { G.hp = Math.min(G.maxHp, G.hp + heal); log(`<span style="color:#70e890">♨️ ใช้ ${p} ฟื้นฟู HP +${heal}</span>`); } 
+      else { G.mp = Math.min(G.maxMp, G.mp + heal); log(`<span style="color:var(--cyan)">💧 ใช้ ${p} ฟื้นฟู MP +${heal}</span>`); }
       G.inventory[p]--; if(G.inventory[p] <= 0) delete G.inventory[p];
-      renderBars(); renderInventory(); saveLocal();
-      return true;
+      renderBars(); renderInventory(); saveLocal(); return true;
     }
   }
-  if (!isAuto) showNotif(`ไม่มียา ${type.toUpperCase()} ในกระเป๋า!`, 'notif-die');
-  return false;
+  if (!isAuto) showNotif(`ไม่มียา ${type.toUpperCase()} ในกระเป๋า!`, 'notif-die'); return false;
 }
 
 function useItem(id, isEq = false) {
   if (G.hp <= 0) { showNotif('น็อคอยู่ ทำสิ่งนี้ไม่ได้', 'notif-die'); return; }
-  
   if (isEq) {
-    const eq = G.inventoryEq[id];
-    if (!eq) return;
+    const eq = G.inventoryEq[id]; if (!eq) return;
     const it = ITEMS[eq.name];
     if (it.reqLv > G.level) { showNotif(`ต้องการ Lv.${it.reqLv}`, 'notif-die'); return; }
     if (it.reqClass && it.reqClass !== G.cls) { showNotif(`เฉพาะอาชีพ ${CLASS_DATA[it.reqClass].name}`, 'notif-die'); return; }
-    
     G.equipment[it.type] = id;
   } else {
-    if (ITEMS[id].type === 'potion_hp') usePotion('hp');
-    if (ITEMS[id].type === 'potion_mp') usePotion('mp');
+    if (ITEMS[id].type === 'potion_hp') usePotion('hp'); if (ITEMS[id].type === 'potion_mp') usePotion('mp');
   }
   calcDerivedStats(); renderAll(); saveLocal();
 }
 
 function unequipSlot(slot) {
   if (G.hp <= 0) return;
-  if (G.equipment[slot]) {
-    G.equipment[slot] = null;
-    calcDerivedStats(); renderAll(); saveLocal();
-  }
+  if (G.equipment[slot]) { G.equipment[slot] = null; calcDerivedStats(); renderAll(); saveLocal(); }
 }
 
 function promptSell(val, isEq) {
   let nameToDisplay, sellPrice;
-  
-  if (isEq) {
-    const eq = G.inventoryEq[val];
-    if (!eq) return;
-    const it = ITEMS[eq.name];
-    nameToDisplay = eq.name + (eq.enchant > 0 ? ` +${eq.enchant}` : '');
-    sellPrice = it.sell + (eq.enchant * 50);
-  } else {
-    if (!G.inventory[val]) return;
-    nameToDisplay = val;
-    sellPrice = ITEMS[val].sell;
-  }
-
+  if (isEq) { const eq = G.inventoryEq[val]; if (!eq) return; nameToDisplay = eq.name + (eq.enchant > 0 ? ` +${eq.enchant}` : ''); sellPrice = ITEMS[eq.name].sell + (eq.enchant * 50); } 
+  else { if (!G.inventory[val]) return; nameToDisplay = val; sellPrice = ITEMS[val].sell; }
   const modal = document.getElementById('action-modal');
   document.getElementById('action-modal-text').innerHTML = `ต้องการขายทิ้ง<br><span style="color:var(--gold); font-size:16px;">${nameToDisplay}</span><br>ในราคา 💰${sellPrice} G หรือไม่?`;
-  
   document.getElementById('action-modal-btn').onclick = function() {
-    if (isEq) {
-       G.gold += sellPrice;
-       delete G.inventoryEq[val];
-       log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`);
-    } else {
-       if(G.inventory[val] > 0) {
-         G.gold += sellPrice;
-         G.inventory[val]--;
-         if(G.inventory[val] <= 0) delete G.inventory[val];
-         log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`);
-       }
-    }
-    renderAll(); saveLocal();
-    modal.style.display = 'none';
+    if (isEq) { G.gold += sellPrice; delete G.inventoryEq[val]; log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`); } 
+    else { if(G.inventory[val] > 0) { G.gold += sellPrice; G.inventory[val]--; if(G.inventory[val] <= 0) delete G.inventory[val]; log(`<span style="color:var(--gold)">ขาย ${nameToDisplay} ได้เงิน +${sellPrice} G</span>`); } }
+    renderAll(); saveLocal(); modal.style.display = 'none';
   };
   modal.style.display = 'flex';
 }
 
 function enchantItem(uid) {
   if (G.hp <= 0) return;
-  const eq = G.inventoryEq[uid];
-  if (!eq) return;
+  const eq = G.inventoryEq[uid]; if (!eq) return;
   const curlv = eq.enchant || 0;
   if (curlv >= 15) { showNotif('อัปเกรดสูงสุดแล้ว (+15)', 'notif-lvlup'); return; }
-  
-  const cost = (curlv + 1) * 200;
-  const successRate = Math.max(10, 100 - (curlv * 6)); 
-  
+  const cost = (curlv + 1) * 200, successRate = Math.max(10, 100 - (curlv * 6)); 
   if (G.gold < cost) { showNotif('เงินไม่พอตีบวก', 'notif-die'); return; }
-  
   G.gold -= cost;
   if (Math.random() * 100 <= successRate) {
-    eq.enchant = curlv + 1;
-    showNotif(`ตีบวกสำเร็จ! เป็น +${curlv+1}`, 'notif-equip');
-    log(`<span style="color:var(--cyan)">🔨 ตีบวก ${eq.name} เป็น +${curlv+1} สำเร็จ!</span>`);
+    eq.enchant = curlv + 1; showNotif(`ตีบวกสำเร็จ! เป็น +${curlv+1}`, 'notif-equip'); log(`<span style="color:var(--cyan)">🔨 ตีบวก ${eq.name} เป็น +${curlv+1} สำเร็จ!</span>`);
   } else {
-    const it = ITEMS[eq.name];
-    if (G.equipment[it.type] === uid) G.equipment[it.type] = null;
-    delete G.inventoryEq[uid]; 
-    showNotif(`💥 ไอเทมแหก!`, 'notif-die');
-    log(`<span style="color:var(--red)">💥 ตีบวก ${eq.name} ล้มเหลว อุปกรณ์พังทลาย!</span>`);
+    if (G.equipment[ITEMS[eq.name].type] === uid) G.equipment[ITEMS[eq.name].type] = null; delete G.inventoryEq[uid]; 
+    showNotif(`💥 ไอเทมแหก!`, 'notif-die'); log(`<span style="color:var(--red)">💥 ตีบวก ${eq.name} ล้มเหลว อุปกรณ์พังทลาย!</span>`);
   }
   calcDerivedStats(); renderAll(); saveLocal();
 }
@@ -1077,12 +984,8 @@ function enchantItem(uid) {
 function buyItem(name, price) {
   if (G.gold < price) return showNotif('เงินไม่พอ', 'notif-die');
   G.gold -= price; 
-  if (EQUIP_SLOTS.includes(ITEMS[name].type)) {
-     const newEq = createEquip(name);
-     G.inventoryEq[newEq.uid] = newEq;
-  } else {
-     G.inventory[name] = (G.inventory[name]||0) + 1;
-  }
+  if (EQUIP_SLOTS.includes(ITEMS[name].type)) { const newEq = createEquip(name); G.inventoryEq[newEq.uid] = newEq; } 
+  else { G.inventory[name] = (G.inventory[name]||0) + 1; }
   renderAll(); saveLocal();
 }
 
@@ -1091,7 +994,7 @@ function buyItem(name, price) {
 // ══════════════════════════════════════════════
 function renderAll() {
   if (!G) return;
-  renderBars(); renderStats(); renderEquip(); renderInventory(); renderEnchant(); checkDeathState();
+  renderBars(); renderStats(); renderEquip(); renderInventory(); renderEnchant(); renderSkillsUI(); renderSkillSlots(); checkDeathState();
   document.getElementById('tb-lv').textContent = G.level;
   document.getElementById('tb-gold').textContent = G.gold.toLocaleString();
 }
@@ -1100,7 +1003,6 @@ function renderBars() {
   document.getElementById('hp-bar').style.width = (G.hp / G.maxHp * 100) + '%';
   document.getElementById('mp-bar').style.width = (G.mp / G.maxMp * 100) + '%';
   document.getElementById('exp-bar').style.width = (G.exp / G.expNext * 100) + '%';
-  
   document.getElementById('hp-text').textContent = `${G.hp}/${G.maxHp}`;
   document.getElementById('mp-text').textContent = `${G.mp}/${G.maxMp}`;
   document.getElementById('exp-text').textContent = `${G.exp}/${G.expNext}`;
@@ -1113,233 +1015,153 @@ function renderStats() {
     document.getElementById('s-'+s).textContent = G[s];
     document.getElementById('t-'+s).textContent = tempStats[s] > 0 ? `(+${tempStats[s]})` : '';
   });
-  document.getElementById('s-atk').textContent = G.atk; 
-  document.getElementById('s-def').textContent = G.def;
-  
+  document.getElementById('s-atk').textContent = getCurrentAtk(); 
+  document.getElementById('s-def').textContent = getCurrentDef();
   if(document.getElementById('s-crit')) document.getElementById('s-crit').textContent = G.crit;
   if(document.getElementById('s-dodge')) document.getElementById('s-dodge').textContent = G.dodge;
-  
   const remainPts = G.statPts - tempStats.pts;
-  if (G.statPts > 0 && G.hp > 0) {
-    document.getElementById('stat-points-area').style.display = 'block';
-    document.getElementById('stat-pts-val').textContent = remainPts;
-  } else {
-    document.getElementById('stat-points-area').style.display = 'none';
-  }
+  if (G.statPts > 0 && G.hp > 0) { document.getElementById('stat-points-area').style.display = 'block'; document.getElementById('stat-pts-val').textContent = remainPts; } 
+  else { document.getElementById('stat-points-area').style.display = 'none'; }
 }
 
 function buildStatString(eq, slotType, formatText = false) {
-  const elv = eq.enchant || 0;
-  const multi = 1 + (elv * 0.20);
-  const flatAtk = elv > 0 ? (elv * elv * 2) : 0;
-  const flatDef = elv > 0 ? (elv * elv * 1.5) : 0;
-  const flatHp  = elv > 0 ? (elv * 50) : 0;
-
-  let bAtk = Math.floor((eq.atk||0) * multi) + flatAtk;
-  let bDef = Math.floor((eq.def||0) * multi) + Math.floor(flatDef);
-  let bHp = Math.floor((eq.hp||0) * multi) + flatHp;
-  let bCrit = (eq.crit||0) + (slotType === 'weapon' ? elv * 1 : 0);
-  let bDodge = (eq.dodge||0) + ((slotType === 'shoes' || slotType === 'pants') ? elv * 1.5 : 0);
-
+  const elv = eq.enchant || 0, multi = 1 + (elv * 0.20), flatAtk = elv > 0 ? (elv * elv * 2) : 0, flatDef = elv > 0 ? (elv * elv * 1.5) : 0, flatHp = elv > 0 ? (elv * 50) : 0;
+  let bAtk = Math.floor((eq.atk||0) * multi) + flatAtk, bDef = Math.floor((eq.def||0) * multi) + Math.floor(flatDef), bHp = Math.floor((eq.hp||0) * multi) + flatHp;
+  let bCrit = (eq.crit||0) + (slotType === 'weapon' ? elv * 1 : 0), bDodge = (eq.dodge||0) + ((slotType === 'shoes' || slotType === 'pants') ? elv * 1.5 : 0);
   let s = [];
-  if(bAtk) s.push(`ATK:+${bAtk}`);
-  if(bDef) s.push(`DEF:+${bDef}`);
-  if(bHp) s.push(`HP:+${bHp}`);
-  if(eq.str) s.push(`STR:+${Math.floor(eq.str*multi)}`);
-  if(eq.int) s.push(`INT:+${Math.floor(eq.int*multi)}`);
-  if(eq.dex) s.push(`DEX:+${Math.floor(eq.dex*multi)}`);
-  if(eq.vit) s.push(`VIT:+${Math.floor(eq.vit*multi)}`);
-  if(bCrit) s.push(`CRI:+${bCrit}%`);
-  if(bDodge) s.push(`FLEE:+${bDodge}%`);
-  
-  if(formatText) return s.join('\n');
-  return s.map(x => `<span>${x}</span>`).join('');
+  if(bAtk) s.push(`ATK:+${bAtk}`); if(bDef) s.push(`DEF:+${bDef}`); if(bHp) s.push(`HP:+${bHp}`);
+  if(eq.str) s.push(`STR:+${Math.floor(eq.str*multi)}`); if(eq.int) s.push(`INT:+${Math.floor(eq.int*multi)}`); if(eq.dex) s.push(`DEX:+${Math.floor(eq.dex*multi)}`); if(eq.vit) s.push(`VIT:+${Math.floor(eq.vit*multi)}`);
+  if(bCrit) s.push(`CRI:+${bCrit}%`); if(bDodge) s.push(`FLEE:+${bDodge}%`);
+  if(formatText) return s.join('\n'); return s.map(x => `<span>${x}</span>`).join('');
 }
 
 function renderEquip() {
   EQUIP_SLOTS.forEach(slot => {
-    const el = document.getElementById('eq-'+slot);
-    const parent = el.parentElement;
-    const uid = G.equipment[slot];
-    
+    const el = document.getElementById('eq-'+slot), parent = el.parentElement, uid = G.equipment[slot];
     if (uid && G.inventoryEq[uid]) {
-      const eq = G.inventoryEq[uid];
-      const itName = eq.name;
-      const elv = eq.enchant || 0;
+      const eq = G.inventoryEq[uid], itName = eq.name, elv = eq.enchant || 0;
       let auraClass = '';
-      if (elv >= 4 && elv <= 6) auraClass = 'enchant-low';
-      else if (elv >= 7 && elv <= 9) auraClass = 'enchant-mid';
-      else if (elv >= 10 && elv <= 14) auraClass = 'enchant-high';
-      else if (elv >= 15) auraClass = 'enchant-max';
-
-      const elvText = elv > 0 ? `<span class="enchant-lvl"> +${elv}</span>` : '';
-      const statStr = buildStatString(eq, slot, true);
-      
+      if (elv >= 4 && elv <= 6) auraClass = 'enchant-low'; else if (elv >= 7 && elv <= 9) auraClass = 'enchant-mid'; else if (elv >= 10 && elv <= 14) auraClass = 'enchant-high'; else if (elv >= 15) auraClass = 'enchant-max';
+      const elvText = elv > 0 ? `<span class="enchant-lvl"> +${elv}</span>` : '', statStr = buildStatString(eq, slot, true);
       el.innerHTML = `${getIconHtml(ITEMS[itName].icon, 20)} <span style="color:${eq.color || 'inherit'};">${itName}</span>${elvText}`;
-      el.className = `equip-slot-val equipped ${auraClass}`;
-      
-      parent.className = 'equip-slot slot-unequip';
-      parent.title = `สวมใส่อยู่\nคลิกเพื่อถอด\n\n[สเตตัสรวมตีบวก]\n${statStr}`;
-      parent.onclick = () => unequipSlot(slot);
-      parent.style.cursor = 'pointer';
-    } else {
-      el.textContent = '-'; 
-      el.className = 'equip-slot-val';
-      parent.className = 'equip-slot';
-      parent.title = '';
-      parent.onclick = null;
-      parent.style.cursor = 'default';
-    }
+      el.className = `equip-slot-val equipped ${auraClass}`; parent.className = 'equip-slot slot-unequip'; parent.title = `สวมใส่อยู่\nคลิกเพื่อถอด\n\n[สเตตัสรวมตีบวก]\n${statStr}`; parent.onclick = () => unequipSlot(slot); parent.style.cursor = 'pointer';
+    } else { el.textContent = '-'; el.className = 'equip-slot-val'; parent.className = 'equip-slot'; parent.title = ''; parent.onclick = null; parent.style.cursor = 'default'; }
   });
 }
 
 function renderInventory() {
-  const list = document.getElementById('inventory-list');
-  const equippedUids = Object.values(G.equipment).filter(uid => uid);
-  const bagEqs = Object.values(G.inventoryEq).filter(eq => !equippedUids.includes(eq.uid));
-  const normalItems = Object.entries(G.inventory).filter(([,q]) => q > 0);
-  
-  if (bagEqs.length === 0 && normalItems.length === 0) {
-    return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ล็อกเกอร์ว่างเปล่า</div>';
-  }
-  
+  const list = document.getElementById('inventory-list'), equippedUids = Object.values(G.equipment).filter(uid => uid);
+  const bagEqs = Object.values(G.inventoryEq).filter(eq => !equippedUids.includes(eq.uid)), normalItems = Object.entries(G.inventory).filter(([,q]) => q > 0);
+  if (bagEqs.length === 0 && normalItems.length === 0) return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ล็อกเกอร์ว่างเปล่า</div>';
   let html = '';
-  
   bagEqs.forEach(eq => {
     const it = ITEMS[eq.name];
-    let reqText = '';
-    if (it.reqLv) reqText += `Lv.${it.reqLv} `;
-    if (it.reqClass && CLASS_DATA[it.reqClass]) reqText += `[${CLASS_DATA[it.reqClass].name.split(' ')[0]}]`;
-    
-    const statsHtml = buildStatString(eq, it.type);
-    const elvText = eq.enchant > 0 ? `<span class="enchant-lvl"> +${eq.enchant}</span>` : '';
-
-    html += `<div class="item-row">
-      <input type="checkbox" class="item-check sell-checkbox" value="${eq.uid}">
-      <div class="item-icon">${getIconHtml(it.icon, 20)}</div>
-      <div class="item-info">
-        <div class="item-name" style="color:${eq.color || 'var(--white)'}; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${eq.name}${elvText} <span style="font-size:8px; font-weight:normal;">[${eq.rarityTier}]</span></div>
-        <div class="item-req">${reqText}</div>
-        <div class="item-stats">${statsHtml}</div>
-      </div>
-      <div class="item-actions">
-        <button class="btn-sm" onclick="useItem('${eq.uid}', true)">ใส่</button>
-        <button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${eq.uid}', true)">ขายทิ้ง</button>
-      </div>
-    </div>`;
+    let reqText = ''; if (it.reqLv) reqText += `Lv.${it.reqLv} `; if (it.reqClass && CLASS_DATA[it.reqClass]) reqText += `[${CLASS_DATA[it.reqClass].name.split(' ')[0]}]`;
+    const statsHtml = buildStatString(eq, it.type), elvText = eq.enchant > 0 ? `<span class="enchant-lvl"> +${eq.enchant}</span>` : '';
+    html += `<div class="item-row"><input type="checkbox" class="item-check sell-checkbox" value="${eq.uid}"><div class="item-icon">${getIconHtml(it.icon, 20)}</div><div class="item-info"><div class="item-name" style="color:${eq.color || 'var(--white)'}; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${eq.name}${elvText} <span style="font-size:8px; font-weight:normal;">[${eq.rarityTier}]</span></div><div class="item-req">${reqText}</div><div class="item-stats">${statsHtml}</div></div><div class="item-actions"><button class="btn-sm" onclick="useItem('${eq.uid}', true)">ใส่</button><button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${eq.uid}', true)">ขายทิ้ง</button></div></div>`;
   });
-
   normalItems.forEach(([name, qty]) => {
     const it = ITEMS[name];
-    html += `<div class="item-row">
-      <input type="checkbox" class="item-check sell-checkbox" value="${name}">
-      <div class="item-icon">${getIconHtml(it.icon, 20)}</div>
-      <div class="item-info">
-        <div class="item-name">${name}</div>
-        <div class="item-sub">${it.desc || ''}</div>
-      </div>
-      <div class="item-actions">
-        <span class="item-qty">x${qty}</span>
-        <div style="display:flex; gap:4px;">
-          <button class="btn-sm" onclick="useItem('${name}', false)">ใช้</button>
-          <button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${name}', false)">ขายทิ้ง</button>
-        </div>
-      </div>
-    </div>`;
+    html += `<div class="item-row"><input type="checkbox" class="item-check sell-checkbox" value="${name}"><div class="item-icon">${getIconHtml(it.icon, 20)}</div><div class="item-info"><div class="item-name">${name}</div><div class="item-sub">${it.desc || ''}</div></div><div class="item-actions"><span class="item-qty">x${qty}</span><div style="display:flex; gap:4px;"><button class="btn-sm" onclick="useItem('${name}', false)">ใช้</button><button class="btn-sm" style="background:var(--red2); border-color:var(--red); color:white;" onclick="promptSell('${name}', false)">ขายทิ้ง</button></div></div></div>`;
   });
-  
-  list.innerHTML = html;
-  document.getElementById('gold-display').textContent = G.gold.toLocaleString();
+  list.innerHTML = html; document.getElementById('gold-display').textContent = G.gold.toLocaleString();
   if(document.getElementById('check-all')) document.getElementById('check-all').checked = false;
 }
 
-function toggleAllCheckboxes(source) {
-  const checkboxes = document.querySelectorAll('.sell-checkbox');
-  checkboxes.forEach(cb => cb.checked = source.checked);
+function renderSkillsUI() {
+    const list = document.getElementById('skill-list');
+    if (!list) return;
+    let html = '';
+    for (const [id, sk] of Object.entries(SKILLS)) {
+        if (sk.reqClass !== G.cls) continue;
+        const isLearned = G.skills.includes(id);
+        const isEquipped = G.equipSkills.includes(id);
+        const cost = sk.reqLv * 1000;
+        let btnHtml = '';
+        
+        if (isLearned) {
+            if (isEquipped) btnHtml = `<button class="btn-sm" style="background:var(--red2); border:none; color:white;" onclick="toggleEquipSkill('${id}')">ถอด</button>`;
+            else btnHtml = `<button class="btn-sm" style="background:var(--green2); border:none; color:white;" onclick="toggleEquipSkill('${id}')">ติดตั้ง</button>`;
+        } else {
+            if (G.level >= sk.reqLv) btnHtml = `<button class="btn-sm" style="border-color:var(--gold); color:var(--gold);" onclick="learnSkill('${id}')">เรียน 💰${cost.toLocaleString()}</button>`;
+            else btnHtml = `<button class="btn-sm" style="opacity:0.5; cursor:not-allowed;" disabled>🔒 Lv.${sk.reqLv}</button>`;
+        }
+
+        let durText = sk.duration > 0 ? ` ⏱️${sk.duration}s` : '';
+        html += `<div class="item-row">
+          <div class="item-icon">${getIconHtml(sk.icon, 24)}</div>
+          <div class="item-info">
+            <div class="item-name">${sk.name}</div>
+            <div class="item-sub" style="color:var(--cyan)">MP: ${sk.mp} | CD: ${sk.cooldown}s${durText}</div>
+            <div class="item-sub">${sk.desc}</div>
+          </div>
+          <div class="item-actions" style="justify-content:center;">${btnHtml}</div>
+        </div>`;
+    }
+    list.innerHTML = html;
 }
 
-function sellSelectedItems() {
-  const checkboxes = document.querySelectorAll('.sell-checkbox:checked');
-  if (checkboxes.length === 0) return showNotif('ไม่ได้เลือกไอเทมที่จะขาย', 'notif-die');
-  
-  let totalGold = 0;
-
-  checkboxes.forEach(cb => {
-    const val = cb.value;
-    if (val.startsWith('eq_')) { 
-      const eq = G.inventoryEq[val];
-      if (eq) {
-        const it = ITEMS[eq.name];
-        totalGold += (it.sell + (eq.enchant * 50));
-        delete G.inventoryEq[val];
-      }
-    } else { 
-      const qty = G.inventory[val];
-      const it = ITEMS[val];
-      if (qty > 0 && it) {
-        totalGold += it.sell * qty;
-        delete G.inventory[val];
-      }
+function renderSkillSlots() {
+    const bar = document.getElementById('skill-bar');
+    if (!bar) return;
+    let html = '';
+    const now = Date.now();
+    for (let i = 0; i < 3; i++) {
+        const id = G.equipSkills[i];
+        if (id && SKILLS[id]) {
+            const sk = SKILLS[id];
+            const cdExpire = skillCooldowns[id] || 0;
+            let cdHtml = '';
+            if (cdExpire > now) {
+                let sec = Math.ceil((cdExpire - now) / 1000);
+                cdHtml = `<div class="skill-cd-overlay">${sec}</div>`;
+            }
+            let checked = G.autoSkills[i] ? 'checked' : '';
+            html += `<div class="skill-slot-ui">
+                <div class="skill-btn" onclick="manualCastSkill(${i})">${getIconHtml(sk.icon, 28)}${cdHtml}</div>
+                <label class="skill-auto"><input type="checkbox" ${checked} onchange="toggleAutoSkill(${i})"> ออโต้</label>
+            </div>`;
+        } else {
+            html += `<div class="skill-slot-ui"><div class="skill-btn empty">+</div></div>`;
+        }
     }
-  });
+    bar.innerHTML = html;
+}
 
-  if (totalGold > 0) {
-    G.gold += totalGold;
-    log(`<span style="color:var(--gold)">💰 เคลียร์ขยะสถาบัน! ได้รับ +${totalGold.toLocaleString()} G</span>`);
-    showNotif(`ขายได้ ${totalGold.toLocaleString()} G`, 'notif-lvlup');
-    renderAll();
-    saveLocal();
-  }
+function toggleAllCheckboxes(source) { const checkboxes = document.querySelectorAll('.sell-checkbox'); checkboxes.forEach(cb => cb.checked = source.checked); }
+function sellSelectedItems() {
+  const checkboxes = document.querySelectorAll('.sell-checkbox:checked'); if (checkboxes.length === 0) return showNotif('ไม่ได้เลือกไอเทมที่จะขาย', 'notif-die');
+  let totalGold = 0;
+  checkboxes.forEach(cb => { const val = cb.value; if (val.startsWith('eq_')) { const eq = G.inventoryEq[val]; if (eq) { totalGold += (ITEMS[eq.name].sell + (eq.enchant * 50)); delete G.inventoryEq[val]; } } else { const qty = G.inventory[val], it = ITEMS[val]; if (qty > 0 && it) { totalGold += it.sell * qty; delete G.inventory[val]; } } });
+  if (totalGold > 0) { G.gold += totalGold; log(`<span style="color:var(--gold)">💰 เคลียร์ขยะสถาบัน! ได้รับ +${totalGold.toLocaleString()} G</span>`); showNotif(`ขายได้ ${totalGold.toLocaleString()} G`, 'notif-lvlup'); renderAll(); saveLocal(); }
 }
 
 function renderEnchant() {
-  const list = document.getElementById('enchant-list');
-  const eqUids = Object.values(G.equipment).filter(uid => uid);
+  const list = document.getElementById('enchant-list'), eqUids = Object.values(G.equipment).filter(uid => uid);
   if (eqUids.length === 0) return list.innerHTML = '<div style="color:var(--text3);text-align:center;">ยังไม่ได้สวมใส่อุปกรณ์ใดๆ</div>';
-  
   list.innerHTML = eqUids.map(uid => {
-    const eq = G.inventoryEq[uid];
-    const name = eq.name;
-    const curlv = eq.enchant || 0;
+    const eq = G.inventoryEq[uid], name = eq.name, curlv = eq.enchant || 0;
     if (curlv >= 15) return `<div class="item-row"><div class="item-info"><span style="color:var(--gold)">${getIconHtml(ITEMS[name].icon, 20)} ${name} +15 (MAX)</span></div></div>`;
-    
-    const cost = (curlv + 1) * 200;
-    const rate = Math.max(10, 100 - (curlv * 6));
-    
-    return `<div class="item-row" onclick="enchantItem('${uid}')" style="border-color:var(--gold2); cursor:pointer;">
-      <div class="item-icon">${getIconHtml(ITEMS[name].icon, 20)}</div>
-      <div class="item-info">
-        <div class="item-name" style="color:${eq.color || 'var(--white)'};">${name} <span class="enchant-lvl">+${curlv} ➡ +${curlv+1}</span></div>
-        <div style="font-size:9px; color:var(--text2)">โอกาสสำเร็จ: ${rate}%</div>
-      </div>
-      <div class="item-qty" style="color:var(--gold)">💰${cost}</div>
-    </div>`;
+    const cost = (curlv + 1) * 200, rate = Math.max(10, 100 - (curlv * 6));
+    return `<div class="item-row" onclick="enchantItem('${uid}')" style="border-color:var(--gold2); cursor:pointer;"><div class="item-icon">${getIconHtml(ITEMS[name].icon, 20)}</div><div class="item-info"><div class="item-name" style="color:${eq.color || 'var(--white)'};">${name} <span class="enchant-lvl">+${curlv} ➡ +${curlv+1}</span></div><div style="font-size:9px; color:var(--text2)">โอกาสสำเร็จ: ${rate}%</div></div><div class="item-qty" style="color:var(--gold)">💰${cost}</div></div>`;
   }).join('');
 }
 
-function buildShop() {
-  document.getElementById('shop-list').innerHTML = SHOP_ITEMS.map(s => `<div class="item-row" onclick="buyItem('${s.name}', ${s.price})" style="cursor:pointer;"><div class="item-icon">${getIconHtml(ITEMS[s.name].icon, 20)}</div><div class="item-info"><div class="item-name">${s.name}</div></div><div class="item-qty" style="color:var(--gold)">💰${s.price}</div></div>`).join('');
-}
+function buildShop() { document.getElementById('shop-list').innerHTML = SHOP_ITEMS.map(s => `<div class="item-row" onclick="buyItem('${s.name}', ${s.price})" style="cursor:pointer;"><div class="item-icon">${getIconHtml(ITEMS[s.name].icon, 20)}</div><div class="item-info"><div class="item-name">${s.name}</div></div><div class="item-qty" style="color:var(--gold)">💰${s.price}</div></div>`).join(''); }
 
 function buildZoneTabs() {
   document.getElementById('zone-tabs').innerHTML = ZONES.map((z, idx) => {
     let locked = G.level < z.unlockLv;
-    
-    if (idx > 0 && !locked) {
-      const pZ = ZONES[idx-1];
-      if (z.unlockLv < 30 && pZ.reqBosses > 0 && (G.quests[pZ.id]||0) < pZ.reqBosses) {
-        locked = true;
-      }
-    }
-    
+    if (idx > 0 && !locked) { const pZ = ZONES[idx-1]; if (z.unlockLv < 30 && pZ.reqBosses > 0 && (G.quests[pZ.id]||0) < pZ.reqBosses) { locked = true; } }
     return `<div class="zone-tab${locked?' locked':(currentZone?.id===z.id?' active':'')}" data-id="${z.id}" onclick="${locked?'':`selectZone(ZONES.find(x=>x.id==='${z.id}'))`}">${locked?`🔒 Lv.${z.unlockLv}`:`${getIconHtml(z.icon, 12)} ${z.name}`}</div>`;
   }).join('');
 }
 
 function switchInvTab(t) {
-  document.querySelectorAll('.inv-tab').forEach((el, i) => el.classList.toggle('active', ['items','enchant','shop'][i] === t));
+  document.querySelectorAll('.inv-tab').forEach((el, i) => el.classList.toggle('active', ['items','enchant','skills','shop'][i] === t));
   document.getElementById('inv-items').style.display = t === 'items' ? 'block' : 'none';
   document.getElementById('inv-enchant').style.display = t === 'enchant' ? 'block' : 'none';
+  document.getElementById('inv-skills').style.display = t === 'skills' ? 'block' : 'none';
   document.getElementById('inv-shop').style.display = t === 'shop' ? 'block' : 'none';
 }
 
@@ -1348,34 +1170,19 @@ function showNotif(msg, cls) { const c = document.getElementById('notif-containe
 
 function saveLocal() { if (G) localStorage.setItem('ran_idle_save', JSON.stringify({ G })); }
 function startAutoSaveSystem() { if(cloudTimer) clearInterval(cloudTimer); cloudTimer = setInterval(silentSave, 60000); }
-async function silentSave() {
-  if (!G || !currentUser) return; saveLocal();
-  fetch(WEB_APP_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, keepalive: true, body: JSON.stringify({ action: 'save', username: currentUser, password: currentPass, data: { G } }) }).catch(()=>{});
-}
+async function silentSave() { if (!G || !currentUser) return; saveLocal(); fetch(WEB_APP_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, keepalive: true, body: JSON.stringify({ action: 'save', username: currentUser, password: currentPass, data: { G } }) }).catch(()=>{}); }
 window.addEventListener('beforeunload', () => { if (G && currentUser) silentSave(); });
 
 async function doLogin() {
   const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
-  if (!u || !p) return alert("กรุณาใส่รหัสนักเรียน/รหัสผ่าน");
-  currentUser = u; currentPass = p;
-  document.getElementById('btn-login').textContent = 'กำลังตรวจสอบ...';
-  
+  if (!u || !p) return alert("กรุณาใส่รหัสนักเรียน/รหัสผ่าน"); currentUser = u; currentPass = p; document.getElementById('btn-login').textContent = 'กำลังตรวจสอบ...';
   try {
     const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: 'login', username: u, password: p }) });
     const json = await res.json();
-    
     if (json.success) {
       document.getElementById('login-screen').style.display = 'none';
-      if (json.isNewUser || !json.data || !json.data.G) {
-        document.getElementById('title-screen').style.display = 'flex';
-      } else {
-        G = json.data.G;
-        migrateSaveData(); 
-        if (!G.quests) G.quests = {};
-        calcDerivedStats(); document.getElementById('char-icon').textContent = CLASS_DATA[G.cls].icon;
-        document.getElementById('game-screen').style.display = 'flex';
-        buildZoneTabs(); buildShop(); checkQuest(); renderAll(); startAutoSaveSystem();
-      }
+      if (json.isNewUser || !json.data || !json.data.G) { document.getElementById('title-screen').style.display = 'flex'; } 
+      else { G = json.data.G; migrateSaveData(); if (!G.quests) G.quests = {}; calcDerivedStats(); document.getElementById('char-icon').textContent = CLASS_DATA[G.cls].icon; document.getElementById('game-screen').style.display = 'flex'; buildZoneTabs(); buildShop(); checkQuest(); renderAll(); startAutoSaveSystem(); }
     } else { alert("Error: " + json.message); document.getElementById('btn-login').textContent = 'เข้าสู่สถาบัน'; }
   } catch(e) { alert("เชื่อมต่อสถาบันล้มเหลว"); document.getElementById('btn-login').textContent = 'เข้าสู่สถาบัน'; }
 }
