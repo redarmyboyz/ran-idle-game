@@ -204,7 +204,7 @@
 <div id="login-screen">
   <div class="login-box">
     <div class="title-logo" style="font-size:36px;">RAN IDLE</div>
-    <div class="title-sub" style="margin-bottom: 24px;">CAMPUS LEGEND</div>
+    <div class="title-sub" style="margin-bottom: 24px;">Protect Our SchoolD</div>
     <input type="text" id="login-user" class="login-input" placeholder="รหัสนักเรียน (Username)" autocomplete="off">
     <input type="password" id="login-pass" class="login-input" placeholder="รหัสผ่าน (Password)">
     <button class="btn btn-primary" id="btn-login" style="width:100%; padding:10px; margin-bottom:12px;" onclick="doLogin()">เข้าสู่สถาบัน</button>
@@ -235,7 +235,7 @@
 
 <div id="game-screen">
   <div class="topbar">
-    <div class="topbar-logo">RAN SG</div>
+    <div class="topbar-logo">RAN Idle</div>
     <div class="topbar-info">
       <div class="topbar-stat">Lv <span id="tb-lv">1</span></div>
       <div class="topbar-stat">💰 <span id="tb-gold">0</span></div>
@@ -379,7 +379,7 @@
 
 <script>
 // ⬇️⬇️⬇️ นำ URL ใหม่มาใส่ที่นี่ ⬇️⬇️⬇️
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRTdFTsDdML3aNGkkI3JNkUU3TDkZFEtxYEoX5vD9jh4FKHUYDmueb7fSghLs2sZ4V4g/exec'; 
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRTdFTsDdML3aNGkkI3JNkUU3TDkZFEtxYEoX5vD9jh4FKHUYDmueb7fSghLs2sZ4V4g/exec; 
 
 const CLASS_DATA = {
   sword: { name: 'สายดาบ (Sword)', icon: '⚔️', base: { str:10, int:2, dex:4, vit:8 }, auto: ['str','str','str','vit','vit'] },
@@ -393,7 +393,7 @@ const EQUIP_SLOTS = ['hat','shirt','pants','shoes','weapon','ring','necklace','b
 let ITEMS = {};
 let ZONES = [];
 let MONSTERS = [];
-let SKILLS = {}; // ข้อมูลสกิลจากเซิร์ฟเวอร์
+let SKILLS = {}; 
 let SHOP_ITEMS = [];
 
 let G = null; 
@@ -660,7 +660,7 @@ setInterval(() => {
     if (!G) return;
     renderSkillSlots();
     renderBuffs();
-}, 1000); // อัปเดตทุก 1 วินาทีสำหรับหน้าจอสกิลและบัพ
+}, 1000); 
 
 function renderBuffs() {
     const bar = document.getElementById('buff-bar');
@@ -681,7 +681,7 @@ function renderBuffs() {
 }
 
 // ══════════════════════════════════════════════
-//  BATTLE & QUESTS
+//  BATTLE & QUESTS (อัปเดตสุ่มเลเวลมอนสเตอร์)
 // ══════════════════════════════════════════════
 function applyDamageToMonster(dmg) {
     monHp = Math.max(0, monHp - dmg);
@@ -745,7 +745,6 @@ function doBattle() {
   const now = Date.now();
   let skillCast = false;
   
-  // ออโต้สกิล
   for (let i = 0; i < 3; i++) {
       if (G.autoSkills[i] && G.equipSkills[i]) {
           const id = G.equipSkills[i];
@@ -757,7 +756,6 @@ function doBattle() {
       }
   }
   
-  // ถ้าเทิร์นนี้ใช้สกิลไปแล้ว จะไม่โจมตีธรรมดาซ้ำ
   if (!skillCast) {
       const isCrit = Math.random() * 100 <= (G.crit || 0);
       let dmg = Math.max(1, getCurrentAtk() - currentMon.def + Math.floor(Math.random() * (getCurrentAtk() * 0.2)));
@@ -838,28 +836,52 @@ function selectZone(zone) {
   log(`<span style="color:var(--purple)">── เข้าสู่ ${zone.name} ──</span>`);
 }
 
+// ✅ อัปเดตลอจิกการสุ่มเลเวลมอนสเตอร์ (แกว่ง +- 3 ตามโซน)
 function spawnMonster() {
   if (!currentZone || !MONSTERS || MONSTERS.length === 0) return;
-  let targetLv = Math.min(G.level, currentZone.maxLv);
-  let availableMons = MONSTERS.filter(m => m.level >= targetLv - 5 && m.level <= targetLv + 5);
+  
+  let zoneMinLv = currentZone.unlockLv || 1;
+  let zoneMaxLv = currentZone.maxLv || 10;
+  
+  // 1. ดึงเลเวลผู้เล่นมาเทียบ แต่ไม่ให้ออกนอกขอบเขตของโซน
+  let baseTargetLv = Math.min(Math.max(G.level, zoneMinLv), zoneMaxLv);
+  
+  // 2. สุ่มเลเวลมอนสเตอร์ให้แกว่ง +- 3 (และยังคงอยู่ในขอบเขตโซน)
+  let minSpawnLv = Math.max(zoneMinLv, baseTargetLv - 3);
+  let maxSpawnLv = Math.min(zoneMaxLv, baseTargetLv + 3);
+  let finalLv = Math.floor(Math.random() * (maxSpawnLv - minSpawnLv + 1)) + minSpawnLv;
+
+  // 3. หามอนสเตอร์ที่มีเลเวลใกล้เคียงกับเลเวลสุดท้ายที่จะเกิด
+  let availableMons = MONSTERS.filter(m => m.level >= finalLv - 5 && m.level <= finalLv + 5);
+  
   if (availableMons.length === 0) {
-     let higherMons = MONSTERS.filter(m => m.level > targetLv + 5).sort((a,b) => a.level - b.level);
+     let higherMons = MONSTERS.filter(m => m.level > finalLv + 5).sort((a,b) => a.level - b.level);
      if (higherMons.length > 0) availableMons = [higherMons[0]];
      else { let allMonsSorted = [...MONSTERS].sort((a,b) => b.level - a.level); availableMons = [allMonsSorted[0]]; }
   }
+
   const isBoss = Math.random() < 0.1; 
   const baseM = availableMons[Math.floor(Math.random() * availableMons.length)];
-  let hp = Math.floor(targetLv * baseM.hpMulti), atk = Math.floor(targetLv * baseM.atkMulti);
-  let def = Math.floor(targetLv * baseM.defMulti), exp = Math.floor(targetLv * baseM.expMulti);
-  let goldArr = [Math.floor(targetLv * baseM.gb), Math.floor(targetLv * baseM.gb * 1.5)];
+  
+  // 4. เอา finalLv ไปคูณเพื่อให้มอนสเตอร์มีพลังเท่ากับเลเวลที่เกิดพอดี
+  let hp = Math.floor(finalLv * baseM.hpMulti);
+  let atk = Math.floor(finalLv * baseM.atkMulti);
+  let def = Math.floor(finalLv * baseM.defMulti);
+  let exp = Math.floor(finalLv * baseM.expMulti);
+  let goldArr = [Math.floor(finalLv * baseM.gb), Math.floor(finalLv * baseM.gb * 1.5)];
+
   if (isBoss) { hp *= 5; atk *= 2; def *= 2; exp *= 5; goldArr = [goldArr[0]*5, goldArr[1]*5]; }
-  currentMon = { name: (isBoss ? "👑 [BOSS] " : "") + baseM.name, icon: baseM.icon, isBoss: isBoss, level: targetLv, hp, atk, def, exp, gold: goldArr };
+
+  currentMon = { name: (isBoss ? "👑 [BOSS] " : "") + baseM.name, icon: baseM.icon, isBoss: isBoss, level: finalLv, hp, atk, def, exp, gold: goldArr };
   monHp = currentMon.hp;
+  
   const mNameEl = document.getElementById('mon-name');
   mNameEl.textContent = `Lv.${currentMon.level} ${currentMon.name}`;
   if (isBoss) mNameEl.classList.add('boss'); else mNameEl.classList.remove('boss');
+  
   document.getElementById('mon-icon').innerHTML = getIconHtml(currentMon.icon, 60);
-  document.getElementById('mon-hp-bar').style.width = '100%'; document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
+  document.getElementById('mon-hp-bar').style.width = '100%'; 
+  document.getElementById('mon-hp-text').textContent = `${monHp} / ${currentMon.hp}`;
 }
 
 function toggleBattle() {
