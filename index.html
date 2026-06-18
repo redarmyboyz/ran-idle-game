@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAN Idle RPG - PROTECT OUR SCHOOL</title>
+<title>RAN Idle RPG - SG Campus</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
@@ -322,7 +322,7 @@
             <button class="btn btn-blue" onclick="usePotion('mp')">💧 ปั๊ม MP</button>
           </div>
           
-          <div class="auto-pot-box">
+          <div class="auto-pot-box" style="flex-wrap: wrap;">
             <div class="auto-pot-item">
               <input type="checkbox" id="auto-pot-hp-check" checked>
               <span>Auto HP <</span><input type="number" id="auto-pot-hp-pct" value="40" class="auto-pot-input">%
@@ -330,6 +330,11 @@
             <div class="auto-pot-item">
               <input type="checkbox" id="auto-pot-mp-check" checked>
               <span>Auto MP <</span><input type="number" id="auto-pot-mp-pct" value="20" class="auto-pot-input">%
+            </div>
+            <!-- เพิ่มปุ่มปิดบอสตรงนี้ -->
+            <div class="auto-pot-item" style="border-left: 1px solid var(--border); padding-left: 8px;">
+              <input type="checkbox" id="no-boss-check">
+              <span style="color:var(--red)">🚫 ปิดเกิดบอส</span>
             </div>
           </div>
         </div>
@@ -860,7 +865,11 @@ function spawnMonster() {
      else { let allMonsSorted = [...MONSTERS].sort((a,b) => b.level - a.level); availableMons = [allMonsSorted[0]]; }
   }
 
-  const isBoss = Math.random() < 0.1; 
+  // ดึงค่าจากกล่องติ๊กว่าผู้เล่นเลือก "ปิดเกิดบอส" หรือไม่
+  const isSkipBoss = document.getElementById('no-boss-check').checked;
+  // ถ้าไม่ได้ติ๊ก ให้สุ่มเกิดบอส 10% ตามปกติ แต่ถ้าติ๊กไว้ isBoss จะเป็น false เสมอ
+  const isBoss = !isSkipBoss && (Math.random() < 0.1); 
+  
   const baseM = availableMons[Math.floor(Math.random() * availableMons.length)];
   
   // 4. เอา finalLv ไปคูณเพื่อให้มอนสเตอร์มีพลังเท่ากับเลเวลที่เกิดพอดี
